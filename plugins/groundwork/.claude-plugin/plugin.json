@@ -1,0 +1,10 @@
+{
+  "name": "groundwork",
+  "description": "Set up and maintain a project's agentic context system and coding workflow - the AGENTS.md/CLAUDE.md layer, the contract gate, the enforcement hooks, and the lane discipline that routes features, bugs, chores and spikes through the right skills",
+  "version": "0.1.0",
+  "author": { "name": "Exilitys" },
+  "homepage": "https://github.com/Exilitys/ExilitysSkills",
+  "repository": "https://github.com/Exilitys/ExilitysSkills",
+  "license": "MIT",
+  "keywords": ["workflow", "context", "agents-md", "invariants", "hooks", "lanes", "drift"]
+}
