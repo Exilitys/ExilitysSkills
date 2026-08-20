@@ -198,6 +198,7 @@ plugins/groundwork/
     SKILL.md                        preflight, modes, the one idea
     references/
       bootstrap.md                  Mode A: nine concerns, gap analysis
+      claude-md-template.md         drafting the root file: sections, trim test
       lanes.md                      Mode B: full lane definitions
       drift-audit.md                Mode C: "is this still true"
       contract-gate.md              designing the list, generating hooks
