@@ -76,9 +76,15 @@ and failed. Take the correction; it is information about the project.
 
 ### `CLAUDE.md` becomes a router
 
-Its job is the concern→location table, the lane table, the contract list, and a
-condensed summary of the architecture. Not a second copy of the architecture —
-where a longer document owns a subject, name it and stop.
+**Section order, caps, the trim test and a worked skeleton are in
+`claude-md-template.md`.** Read it before drafting; this is the file every
+session pays for, and the one people fill with a condensed architecture summary
+that goes stale without anyone touching it.
+
+Its job is the concern→location table, the lane table, the contract list, and
+the framing no file carries. Not a second copy of the architecture — where a
+longer document owns a subject, name it and stop. The rule that decides every
+section: **it is a pointer or a rule, never a summary.**
 
 **Plus one short section naming the skills the lane table depends on**, so a
 future session in a different environment finds out before it improvises a

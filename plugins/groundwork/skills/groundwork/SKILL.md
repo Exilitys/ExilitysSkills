@@ -118,6 +118,7 @@ the upgrade path. Those are deferrals; harvest them into the backlog at sync.
 | File | Read when |
 |---|---|
 | `references/bootstrap.md` | Mode A - the nine concerns, gap analysis, templates |
+| `references/claude-md-template.md` | Drafting the root file - sections, caps, trim test |
 | `references/drift-audit.md` | Mode C - periodic "is this still true" pass |
 | `references/lanes.md` | Mode B - full lane definitions, skill chaining per phase |
 | `references/contract-gate.md` | Designing the contract list and generating hooks |
