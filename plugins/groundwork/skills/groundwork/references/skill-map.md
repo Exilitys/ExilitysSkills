@@ -68,6 +68,16 @@ the fallbacks and continue.
 | `diagnose` | Lane 2 hard/perf bugs lose minimise + instrument |
 | `prototype` | Lane 4 has no shape |
 | `handoff` | context exhaustion becomes a lost session |
+| `explain-diff-html` | 1.10b, and onboarding - fall back to a written walkthrough in the PR thread, which nobody reads twice |
+
+**`explain-diff-html` is the one Tier 2 row you may already have.** It ships in
+this same marketplace, so unlike the rest of the tier it is one command away
+rather than a dependency on someone else's plugin:
+
+```bash
+/plugin install explain-diff@exilitys-skills     # Claude Code
+python install.py --skill explain-diff-html      # any other host
+```
 
 ### Tier 3 - craft. Called from inside a step; absence is not a blocker.
 
@@ -119,11 +129,12 @@ context maintenance, PR prose. These are usually a different family's strength.
 | Verify | `superpowers:verification-before-completion`, then a check/verify skill |
 | Review | `requesting-` → `receiving-code-review` |
 | PR prose | a document skill |
+| Explain a change to a reader | `explain-diff-html` |
 | Fold context back | a sync skill |
 | Out of context | `handoff` |
 | Unfamiliar area | `zoom-out` |
 
-## The four collisions, and how to rule them
+## The five collisions, and how to rule them
 
 ### 1. Two spec/artifact homes
 
@@ -155,7 +166,22 @@ split that holds: **test-first for pure logic, test-after for UI.** A component
 nobody has looked at yet cannot be specified in a test honestly; a pure policy
 function can.
 
-### 4. Duplicated verbs
+### 4. PR prose vs. an explanation page
+
+`/document pr` and `explain-diff-html` both read a diff and produce prose, so
+they read as rivals. They are not, and the split is by **audience**:
+
+| | Reader | Length | Lives |
+|---|---|---|---|
+| **PR description** | someone deciding whether to look | paragraphs | in the PR, read once |
+| **Explanation page** | someone who has decided and must understand | a long page | outside the repo, read by whoever needs it next |
+
+The ruling: **the PR body always, the page only when step 10b's conditions
+hold.** Neither substitutes for the other, and an explanation page is never a
+reason to skip the PR description — the reviewer still needs the paragraph that
+says what they are looking at.
+
+### 5. Duplicated verbs
 
 Two or three skills for debugging, executing, planning. Name the default and
 name the exception. "systematic-debugging always; `diagnose` when it's hard or a

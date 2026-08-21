@@ -1,0 +1,10 @@
+{
+  "name": "explain-diff",
+  "description": "Explain a code change - diff, branch, commit range or PR - as a single self-contained HTML page with background, intuition, a code walkthrough, diagrams and an interactive quiz that checks the reader actually understood it",
+  "version": "0.1.0",
+  "author": { "name": "Exilitys" },
+  "homepage": "https://github.com/Exilitys/ExilitysSkills",
+  "repository": "https://github.com/Exilitys/ExilitysSkills",
+  "license": "MIT",
+  "keywords": ["diff", "code-review", "explanation", "onboarding", "html", "pr"]
+}

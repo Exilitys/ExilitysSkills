@@ -1,6 +1,6 @@
 {
   "name": "exilitys-skills",
-  "description": "Exilitys' Claude Code plugins - workflow and context-system tooling",
+  "description": "Exilitys' agent skills - workflow, context-system and code-explanation tooling. Packaged as Claude Code plugins; installable on any SKILL.md-compatible agent via install.py",
   "owner": {
     "name": "Exilitys",
     "url": "https://github.com/Exilitys"
@@ -11,8 +11,34 @@
       "description": "Set up and maintain a project's agentic context system and coding workflow - the AGENTS.md/CLAUDE.md layer, the contract gate, the enforcement hooks, and the lane discipline",
       "version": "0.1.0",
       "source": "./plugins/groundwork",
-      "author": { "name": "Exilitys" },
-      "keywords": ["workflow", "context", "agents-md", "invariants", "hooks", "lanes"]
+      "author": {
+        "name": "Exilitys"
+      },
+      "keywords": [
+        "workflow",
+        "context",
+        "agents-md",
+        "invariants",
+        "hooks",
+        "lanes"
+      ]
+    },
+    {
+      "name": "explain-diff",
+      "description": "Explain a code change - diff, branch, commit range or PR - as a single self-contained HTML page with background, intuition, a code walkthrough, diagrams and an interactive quiz",
+      "version": "0.1.0",
+      "source": "./plugins/explain-diff",
+      "author": {
+        "name": "Exilitys"
+      },
+      "keywords": [
+        "diff",
+        "code-review",
+        "explanation",
+        "onboarding",
+        "html",
+        "pr"
+      ]
     }
   ]
 }
