@@ -6,6 +6,14 @@ condensed architecture summary, which is the single most reliable way to
 produce a doc that lies: two summaries of one subject drift, and the
 always-loaded one wins by default while being the more out of date.
 
+## Which file this is
+
+Whichever one the project picked in bootstrap step 4 — `AGENTS.md` on most
+projects, `CLAUDE.md` where that one already has history, `GEMINI.md` where
+Gemini CLI is the only tool. Everything below applies to it whatever its name,
+and applies **once**: the others are one-line pointers with no content of their
+own, so there is nothing in them to keep current.
+
 ## The one rule
 
 > **Every section is a pointer or a rule. Never a summary.**
@@ -136,9 +144,9 @@ has a better home:
 Genericized from a repo running this system. Prose trimmed to show shape.
 
 ```markdown
-# CLAUDE.md
+# AGENTS.md
 
-Guidance for Claude Code in this repository. **This file routes; it does not
+Guidance for coding agents in this repository. **This file routes; it does not
 duplicate.** Where a longer document owns a subject, this file names it and
 stops - two summaries of one thing drift.
 
