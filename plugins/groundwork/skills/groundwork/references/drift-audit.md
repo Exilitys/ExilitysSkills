@@ -68,6 +68,12 @@ measurable. The script reads the project's session transcripts and reports what
 fraction of **code-editing** sessions announced one; sessions that only answered
 questions are excluded, because they have no lane.
 
+It reads Claude Code transcripts exactly and other hosts heuristically, and
+labels which reading it used — report a heuristic number as a trend, not a
+measurement. Where it finds no transcripts, the honest report is "unmeasured
+here", never 0%: a missing transcript directory is not evidence of a missing
+lane. `--transcripts DIR` points it at a host this file has not heard of.
+
 A low number is evidence about the workflow, not about the sessions. Measured
 on the repo this skill was built in: **13%**, with a `SessionStart` hook
 printing the lane table every single session. Being visible is not the same as
@@ -86,4 +92,6 @@ Drift is evidence about the context system, not just about one file.
 - A rule broken repeatedly despite being written down? It is a hook, not a
   sentence. `contract-gate.md`.
 - A concern with two homes again? Bootstrap step 2 got the ruling wrong. Re-rule
-  it once, in `CLAUDE.md`.
+  it once, in the always-loaded root file. If the second home turned out to be
+  another agent's root file, the ruling to re-make is the one in
+  `host-adapters.md`: one file with content, the rest pointers.

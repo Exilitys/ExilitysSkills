@@ -12,11 +12,15 @@ Do not ask the user what exists. Look.
 
 ```
 git remote -v
-ls AGENTS.md CLAUDE.md CONTEXT.md README.md
+ls AGENTS.md CLAUDE.md GEMINI.md CONTEXT.md README.md
 find docs -type f 2>/dev/null | head -50
 find . -name "AGENTS.md" -not -path "*/node_modules/*"
-ls .claude/ 2>/dev/null
+ls -d .claude .codex .opencode .cursor .gemini .agents 2>/dev/null
 ```
+
+That last line also tells you **which agents this team actually uses**, which
+decides the root filename in step 4 and the enforcement mechanism in step 5.
+More than one means the placement rules below matter more, not less.
 
 Then read enough of what you find to know whether it is *current* or
 aspirational. A doc that names a class is a claim; check the class exists.
@@ -45,7 +49,7 @@ workflow actually runs on:
 
 | # | Concern | Home |
 |---|---|---|
-| 10 | **How we work** — lanes, gate, contract list | `CLAUDE.md` tables + `.claude/settings.json` hooks |
+| 10 | **How we work** — lanes, gate, contract list | root file tables + whatever the host enforces with (`host-adapters.md`) |
 | 11 | **Decision provenance** — what we chose not to do, and when to revisit | spec files + backlog entries carrying explicit conditions |
 
 ## Step 3 - Present the gap table, then confirm
@@ -64,8 +68,13 @@ and failed. Take the correction; it is information about the project.
 
 ### Placement rules
 
-- **One always-loaded root file.** `CLAUDE.md` (or `AGENTS.md` — never both as
-  content; the second becomes a one-line `@` pointer to the first).
+- **One always-loaded root file.** Exactly one holds content; every other
+  candidate becomes a one-line pointer to it. Prefer `AGENTS.md` — it is the
+  cross-tool name, read by the most agents, and the only choice that does not
+  need re-deciding when someone joins on a different tool. Keep `CLAUDE.md` as
+  the content file only when it already has history; then `AGENTS.md` points at
+  it. Never two files with content, and never one file per agent: that is the
+  same drift this skill exists to prevent, multiplied by the number of tools.
 - **Standards and library docs go directory-local**, next to the code they
   govern: `backend/AGENTS.md`, `frontend/AGENTS.md`. A Python session should
   never load React conventions. Split by stack, not by topic.
@@ -74,7 +83,7 @@ and failed. Take the correction; it is information about the project.
   if any skill in use reads one. Cap it hard: the moment it explains *how*
   something works it has become a second architecture doc.
 
-### `CLAUDE.md` becomes a router
+### The root file becomes a router
 
 **Section order, caps, the trim test and a worked skeleton are in
 `claude-md-template.md`.** Read it before drafting; this is the file every
@@ -87,7 +96,8 @@ longer document owns a subject, name it and stop. The rule that decides every
 section: **it is a pointer or a rule, never a summary.**
 
 **Plus one short section naming the skills the lane table depends on**, so a
-future session in a different environment finds out before it improvises a
+future session in a different environment — or a different agent, where those
+skills may not exist at all — finds out before it improvises a
 step. Write only the skills that were actually installed when you wrote the
 table — the list is a manifest of what the lanes assume, not a wishlist:
 
@@ -153,7 +163,7 @@ What it asserts:
 - if the glossary lists "not domain terms", none may exist as real classes
 
 Run it. It will fail on the first run — that failure is the point. A real
-example: a root `CLAUDE.md` listing a port class that had never existed, while
+example: a root always-loaded file listing a port class that had never existed, while
 omitting one that shipped four days earlier, with nothing in a 900-test suite
 able to see it.
 
@@ -173,7 +183,7 @@ hooks are a no-op — that is fine, they grow with the project.
   it in a `SessionStart` hook from git and plan headers instead.
 - **A hand-maintained component registry** when the component directory exists.
   The code cannot go stale; the registry can.
-- **Restating architecture in `CLAUDE.md`.** Two summaries diverge; the always-
+- **Restating architecture in the root file.** Two summaries diverge; the always-
   loaded one wins by default and is usually the more out of date.
 - **Writing a rule you could have enforced.** Ask what would fail if it were
   broken. If nothing, write the check instead — or as well.

@@ -1,11 +1,26 @@
 # ExilitysSkills
 
-A Claude Code plugin marketplace. One plugin so far.
+Agent skills, one so far. They are plain [Agent Skills](https://github.com/agentskills/agentskills)
+— a `SKILL.md` with frontmatter plus its references and scripts — so they run
+on any coding agent that loads that format, not only Claude Code.
+
+**Claude Code**, as a plugin:
 
 ```bash
 /plugin marketplace add Exilitys/ExilitysSkills
 /plugin install groundwork@exilitys-skills
 ```
+
+**Codex, OpenCode, Cursor, Gemini CLI, or anything else** — clone and run the
+installer, which puts the skill where your agent looks:
+
+```bash
+git clone https://github.com/Exilitys/ExilitysSkills
+python ExilitysSkills/install.py --root /path/to/your/repo
+```
+
+It detects which agents the repo is configured for and installs for those. See
+[Any coding agent](#any-coding-agent) below.
 
 ---
 
@@ -41,6 +56,10 @@ that no check can hold, and make the writing itself checkable.
 | `/groundwork` | Bootstrap, or route the task you are starting. Infers the mode from the repo |
 | `/groundwork-drift` | "Is any of this still true?" — run after a merge-heavy stretch |
 | `/groundwork-hooks` | Install the contract gate + session-start hooks into *this* repo |
+
+The installer writes these in each host's own command dialect, so they are real
+slash commands on Claude Code, OpenCode, Cursor and Gemini CLI, and prompts on
+Codex. On a host with no command mechanism, ask for groundwork by name instead.
 
 The skill also loads on its own when you ask to set up project context, make a
 workflow repeatable, or fix a repo whose AI docs have gone stale.
@@ -112,13 +131,84 @@ one where breaking it is **cheap and silent**: port signatures, migrations, a
 shared runtime script, design tokens, prompts — plus any deferred decision
 carrying a revisit condition.
 
-`/groundwork-hooks` makes this a real `PreToolUse` hook rather than a sentence,
-because the sentence has a known failure mode: a session in a hurry skims it.
-The hook reads the path list *from your invariants doc*, so there is exactly one
-list — never one in prose and one in code that quietly disagree.
+`/groundwork-hooks` makes this a real hook rather than a sentence, because the
+sentence has a known failure mode: a session in a hurry skims it. The hook reads
+the path list *from your invariants doc*, so there is exactly one list — never
+one in prose and one in code that quietly disagree.
+
+The same script fires three ways, so the list is enforced whatever your agent
+supports:
+
+```bash
+echo '{"tool_name":"Edit","tool_input":{"file_path":"<path>"}}' | python contract_gate.py   # pre-edit hook
+python contract_gate.py <path>...                                                            # explicit / argv hooks
+python contract_gate.py --staged                                                             # git pre-commit
+```
+
+Exit 2 means blocked either way — Claude Code reads 2 as "block and tell the
+model why", git reads non-zero as "reject the commit".
+
+**A pre-edit gate is not portable; a commit gate is.** So install both:
+`python install.py --git-gate` writes the `pre-commit` one, and it is the only
+firing point that also stops a teammate working in a different agent. Without
+it, the first person on another tool walks straight through a list that still
+reads as enforced.
 
 Hooks install **per repo, not globally**. Contract paths differ per project, and
 a gate firing in repos that never opted in is the first thing anyone uninstalls.
+
+---
+
+## Any coding agent
+
+The skill is the Agent Skills format, which Claude Code, Codex CLI, OpenCode,
+Cursor and Gemini CLI all load. What differs per agent is everything *around*
+it — where the folder goes, how a command is declared, and whether a pre-edit
+hook exists at all. `install.py` is that translation layer.
+
+```bash
+python install.py --list                    # what's detected, and where things would go
+python install.py                           # detected hosts + the neutral copy, this repo
+python install.py --host codex opencode     # name them explicitly
+python install.py --scope user              # into your home config instead of the repo
+python install.py --link                    # one real copy, the rest symlinked at it
+python install.py --git-gate                # + the pre-commit contract gate
+python install.py --dry-run                 # print the plan, write nothing
+python install.py --uninstall               # reverse exactly what a run wrote
+```
+
+| Host | Skill folder | Commands |
+|---|---|---|
+| Claude Code | `.claude/skills/` | `.claude/commands/*.md` |
+| Codex CLI | `.codex/skills/` | `~/.codex/prompts/*.md` (global only) |
+| OpenCode | `.opencode/skills/` — also reads `.claude/skills/` and `.agents/skills/` | `.opencode/command/*.md` |
+| Cursor | `.cursor/skills/` | `.cursor/commands/*.md` |
+| Gemini CLI | `.gemini/skills/` | `.gemini/commands/*.toml` |
+| Anything else | `.agents/skills/` | — |
+
+Every run also writes a marked block into `AGENTS.md` pointing at the installed
+skill. That block is what makes this work on a harness with **no skill loader
+at all** — a DeepSeek-backed agent, an in-house wrapper, whatever your team
+runs — because `AGENTS.md` is the one file essentially every coding agent
+loads. It is not as good as real skill discovery: the skill loads because the
+root file told the agent to read it, not because the description matched. It is
+enough.
+
+Everything is recorded in `.groundwork/install.json`, so `--uninstall` removes
+exactly what was added and never guesses.
+
+The skill knows about all this too — `references/host-adapters.md` is what it
+reads when the session is not Claude Code, so it stops offering plugin installs
+that cannot happen and picks the enforcement your host actually has.
+
+### The honest part
+
+Skill *discovery* is portable; the ecosystem around it is not.
+[superpowers](https://github.com/obra/superpowers) — Tier 1 below — is a Claude
+Code plugin, so on Codex or Gemini those eight rows are unavailable and the
+one-line fallbacks are the plan rather than a degradation. groundwork's own
+discipline (lanes, the gate, provenance, the ladder) carries over intact,
+because it was always prose and a path list rather than a tool.
 
 ---
 
@@ -140,12 +230,15 @@ not have is a lane the agent quietly improvises and then reports as followed.
 - **Tier 3 — craft.** UI, styling, testing, minimalism skills. Absence is never
   a blocker.
 
-Install superpowers:
+Install superpowers (Claude Code only):
 
 ```bash
 /plugin marketplace add obra/superpowers
 /plugin install superpowers
 ```
+
+On other hosts groundwork skips the offer rather than naming an install command
+you cannot run, and reports which fallbacks it will use instead.
 
 ---
 
@@ -184,13 +277,21 @@ and why.
   doing the wrong thing.
 - **Windows-first.** Written and tested on Windows with Python 3.11+; the
   scripts avoid shell assumptions but have had less exercise elsewhere.
+  `--link` falls back to copying where symlinks are unavailable.
+- **Adoption measurement is exact on Claude Code only.** `lane_adoption.py`
+  knows Claude Code's transcript shape; on other hosts it scans JSONL
+  heuristically and says so in its output. Read a heuristic number as a trend.
+- **Host paths move.** Agents rename their config directories more often than a
+  README gets updated. `install.py --list` prints where it *would* write before
+  it writes anything, and `--host` overrides the guess.
 
 ---
 
 ## Repo layout
 
 ```
-.claude-plugin/marketplace.json     marketplace manifest
+install.py                          cross-agent installer
+.claude-plugin/marketplace.json     Claude Code marketplace manifest
 plugins/groundwork/
   .claude-plugin/plugin.json
   commands/                         /groundwork, -drift, -hooks
@@ -204,9 +305,10 @@ plugins/groundwork/
       contract-gate.md              designing the list, generating hooks
       tooling-floor.md              what becomes config instead of prose
       skill-map.md                  preflight tiers, phase ownership
+      host-adapters.md              running on Codex / OpenCode / Cursor / Gemini / anything
       memory-graph.md               graph search, memory tiers
     assets/
-      hooks/                        contract_gate.py, session_start.py
+      hooks/                        contract_gate.py (3 input modes), session_start.py
       tests/                        integrity templates (Vitest + pytest)
       drift_report.py               Mode C mechanical pass
       lane_adoption.py              does anyone follow the workflow

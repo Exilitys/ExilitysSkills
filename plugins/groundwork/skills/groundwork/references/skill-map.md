@@ -12,16 +12,27 @@ A lane that names a skill the user does not have is worse than no lane: the
 agent silently improvises the step and reports it as followed.
 
 Check the session's own skill list first - it is already in context. Fall back
-to the filesystem when unsure:
+to the filesystem when unsure; which directories to look in depends on the host
+(`host-adapters.md` has the full table):
 
 ```bash
-ls ~/.claude/skills/ ~/.claude/plugins/*/skills/ 2>/dev/null
+ls ~/.claude/skills/ ~/.claude/plugins/*/skills/ 2>/dev/null   # Claude Code
+ls ~/.codex/skills/ .codex/skills/ 2>/dev/null                 # Codex CLI
+ls ~/.config/opencode/skills/ .opencode/skills/ 2>/dev/null     # OpenCode
+ls .agents/skills/ 2>/dev/null                                  # any host
 ```
+
+**On a host that advertises no skill list and has none of these directories,
+the honest answer is "nothing is installed."** Say that, use the fallbacks, and
+write `manual` in every row. Do not infer availability from the fact that a
+capability *sounds* standard.
 
 ### Tier 1 - required. Missing one degrades a lane.
 
-Every one of these ships in a single plugin, which makes that plugin a single
-point of failure. **So Tier 1 does not fail shut.** Report the gap, offer the
+Every one of these ships in a single Claude Code plugin, which makes that
+plugin a single point of failure - and makes the whole tier unavailable on
+Codex, Cursor, Gemini CLI, and any host that does not load Claude Code plugins.
+**So Tier 1 does not fail shut.** Report the gap, offer the
 install, and if the user says continue, run the fallback - each is one line,
 because the skill's value is the discipline, not the prose.
 
@@ -38,6 +49,10 @@ because the skill's value is the discipline, not the prose.
 
 Say "superpowers is not installed" once, with the install command, rather than
 listing eight rows. Then name which fallbacks you will use.
+
+On a host that cannot install it at all, skip the offer -- an install command
+the user cannot run reads as a blocker where there is only a substitution. Name
+the fallbacks and continue.
 
 ### Tier 2 - recommended. Missing one degrades a step to manual.
 
@@ -119,9 +134,15 @@ tempting — weigh it against the link churn; usually not worth it.
 
 ### 2. Competing always-read substrates
 
-`CLAUDE.md`, `AGENTS.md`, a `context/` folder, `CONTEXT.md`. Pick **one root**
-file. `AGENTS.md` stays legitimate as *directory-local* rules; the root variant
-becomes a one-line pointer to whichever is canonical.
+`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, a `context/` folder, `CONTEXT.md`. Pick
+**one root** file. `AGENTS.md` stays legitimate as *directory-local* rules; the
+root variant becomes a one-line pointer to whichever is canonical.
+
+This collision gets worse, not easier, when a team uses several agents: each
+host has a preferred filename and the instinct is to give each one its own
+copy. Resist it. One canonical file, the rest one-line pointers -- see
+`host-adapters.md`. Per-host copies are the same drift this skill exists to
+prevent, multiplied by the number of agents in the team.
 
 A domain-glossary `CONTEXT.md` is the one worthwhile addition, because several
 skills read one and run degraded without it — but cap it at a glossary. The

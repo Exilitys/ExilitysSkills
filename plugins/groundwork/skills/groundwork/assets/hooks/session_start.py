@@ -1,4 +1,4 @@
-"""SessionStart: orient the session in facts, not in prose it might skim.
+"""Session orientation: facts, not prose the session might skim.
 
 Prints branch, uncommitted state, the contract list, any plan with unchecked
 boxes, and graph freshness. All of it is computed, so none of it can go out of
@@ -6,11 +6,24 @@ date the way a written status line does -- which is precisely why a
 hand-maintained progress tracker is not worth adopting.
 
 Everything is derived from the repo, so this runs unmodified in most projects.
-The three constants below are the only tuning points.
+The constants below are the only tuning points.
+
+Hosts differ in how they run it, and it needs nothing from any of them:
+
+  * Claude Code -- a `SessionStart` hook; stdout is injected as context.
+  * OpenCode    -- a plugin on the session-start event, same idea.
+  * Anything else, including harnesses with no event model at all --
+    `python session_start.py` and paste, or wire it into the shell prompt or a
+    `make context` target. It reads stdin from nobody and writes markdown to
+    stdout, so every host is just a different way of calling it.
+
+    python session_start.py [--root PATH]
 """
 
 from __future__ import annotations
 
+import argparse
+import os
 import re
 import subprocess
 import sys
@@ -20,12 +33,43 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-REPO = Path(__file__).resolve().parents[2]
-
 # Tuning points.
-INVARIANTS = REPO / "docs" / "architecture" / "invariants.md"
+INVARIANTS_CANDIDATES = [
+    "docs/architecture/invariants.md",
+    "docs/invariants.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+]
 PLAN_DIRS = ["docs/superpowers/plans", "docs/plans", "docs/specs"]
-GRAPH = REPO / "graphify-out" / "graph.json"
+GRAPH_REL = "graphify-out/graph.json"
+
+
+def repo_root(explicit: str | None = None) -> Path:
+    """Git decides, so this runs from any install location on any host.
+
+    The old `parents[2]` walk assumed the script sat at `.claude/hooks/`, true
+    on exactly one host. It stays as the last fallback.
+    """
+    if explicit and Path(explicit).is_dir():
+        return Path(explicit).resolve()
+    env = os.environ.get("GROUNDWORK_REPO") or os.environ.get("CLAUDE_PROJECT_DIR")
+    if env and Path(env).is_dir():
+        return Path(env).resolve()
+    for cwd in (Path.cwd(), Path(__file__).resolve().parent):
+        try:
+            out = subprocess.run(
+                ["git", "-C", str(cwd), "rev-parse", "--show-toplevel"],
+                capture_output=True, text=True, timeout=10,
+            ).stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if out:
+            return Path(out).resolve()
+    return Path(__file__).resolve().parents[2]
+
+
+REPO = repo_root()
+GRAPH = REPO / GRAPH_REL
 
 
 def git(*args: str) -> str:
@@ -37,25 +81,48 @@ def git(*args: str) -> str:
         return ""
 
 
-def contract_paths() -> list[str]:
+def invariants_file() -> Path | None:
+    """First candidate that actually carries the section, not the first that exists."""
+    override = os.environ.get("GROUNDWORK_INVARIANTS")
+    for rel in ([override] if override else INVARIANTS_CANDIDATES):
+        path = REPO / rel
+        if not path.is_file():
+            continue
+        try:
+            if "## Contract paths" in path.read_text(encoding="utf-8", errors="replace"):
+                return path
+        except OSError:
+            continue
+    return None
+
+
+def contract_paths() -> tuple[list[str], Path | None]:
     """The fenced block under '## Contract paths' in the invariants doc.
 
-    Same source the gate hook reads, so the reminder and the enforcement can
-    never disagree -- one list, not one in prose and one in code.
+    Same source and same parse the gate reads, so the reminder and the
+    enforcement can never disagree -- one list, not one in prose and one in
+    code.
     """
-    if not INVARIANTS.exists():
-        return []
+    doc = invariants_file()
+    if doc is None:
+        return ([], None)
     try:
-        text = INVARIANTS.read_text(encoding="utf-8", errors="replace")
+        text = doc.read_text(encoding="utf-8", errors="replace")
     except OSError:
-        return []
+        return ([], doc)
     section = text.split("## Contract paths", 1)
     if len(section) < 2:
-        return []
-    fence = re.search(r"```\n(.*?)```", section[1], re.S)
+        return ([], doc)
+    fence = re.search(r"```[^\n]*\n(.*?)```", section[1], re.S)
     if not fence:
-        return []
-    return [ln.strip() for ln in fence.group(1).splitlines() if ln.strip()]
+        return ([], doc)
+    paths = []
+    for line in fence.group(1).splitlines():
+        line = re.sub(r"^[-*]\s+", "", line.strip())
+        if not line or line.startswith("#"):
+            continue
+        paths.append(line.split()[0])
+    return (paths, doc)
 
 
 def open_plans() -> list[tuple[str, int]]:
@@ -99,6 +166,14 @@ def graph_state() -> str | None:
 
 
 def main() -> int:
+    global REPO, GRAPH
+    ap = argparse.ArgumentParser(description="Print session orientation as markdown.")
+    ap.add_argument("--root", help="repo to describe (default: git toplevel)")
+    args, _ = ap.parse_known_args()
+    if args.root:
+        REPO = repo_root(args.root)
+        GRAPH = REPO / GRAPH_REL
+
     branch = git("rev-parse", "--abbrev-ref", "HEAD") or "?"
     dirty = [ln for ln in git("status", "--short").splitlines() if ln.strip()]
 
@@ -117,10 +192,10 @@ def main() -> int:
         "**Announce which lane you are in.**",
     ]
 
-    contracts = contract_paths()
-    if contracts:
+    contracts, doc = contract_paths()
+    if contracts and doc is not None:
         joined = ", ".join(f"`{p}`" for p in contracts)
-        rel = INVARIANTS.relative_to(REPO).as_posix()
+        rel = doc.relative_to(REPO).as_posix()
         lines += [
             "",
             f"**Contract paths need a spec before code:** {joined} — plus any "

@@ -1,6 +1,6 @@
 ---
 name: groundwork
-description: Set up or maintain a project's agentic context system and coding workflow - the AGENTS.md/CLAUDE.md layer, the invariants and contract gate, the enforcement hooks, and the lane discipline that routes features, bugs, chores and spikes through the right skills. Use when starting a fresh project, when an existing repo's AI context is missing or stale, when deciding how a team should work with Claude Code, or when asked to make a workflow repeatable across projects.
+description: Set up or maintain a project's agentic context system and coding workflow - the AGENTS.md/CLAUDE.md layer, the invariants and contract gate, the enforcement hooks, and the lane discipline that routes features, bugs, chores and spikes through the right skills. Use when starting a fresh project, when an existing repo's AI context is missing or stale, when deciding how a team should work with a coding agent (Claude Code, Codex, OpenCode, Cursor, Gemini CLI or any other), or when asked to make a workflow repeatable across projects and across agents.
 ---
 
 # Groundwork
@@ -23,8 +23,14 @@ checkable.
 This skill does not do the work; it routes to other skills that do. So the
 first action, every time, is **check they exist.**
 
+0. **Notice which host you are.** If this is not Claude Code, read
+   `references/host-adapters.md` first: paths, command formats and the
+   enforcement mechanism all differ, and Tier 1 below ships as a Claude Code
+   plugin that other hosts cannot install. On those hosts the fallback column
+   is the plan, not a degradation - report it once and continue.
 1. Read the session's available-skills list against the tiers in
-   `references/skill-map.md`.
+   `references/skill-map.md`. Where the host advertises no such list, say so
+   and treat every row as `manual` rather than guessing.
 2. **Tier 1 missing -> stop and ask.** Name the plugin, give the install
    command, and offer the one-line fallback for each affected step. The user
    chooses install or degrade; you do not choose silently. A lane that names a
@@ -51,6 +57,8 @@ follow it. Summary:
 3. **Write only the gaps**, plus the routing table into `CLAUDE.md`.
 4. **Lay the tooling floor** - `references/tooling-floor.md`.
 5. **Offer the hooks** - `references/contract-gate.md`. Opt-in, shown first.
+   On a host with no pre-edit hook, offer the git pre-commit gate instead;
+   `references/host-adapters.md` has the mechanics.
 
 Never overwrite curated prose. Add lines; rewrite only lines this skill owns.
 
@@ -124,5 +132,6 @@ the upgrade path. Those are deferrals; harvest them into the backlog at sync.
 | `references/contract-gate.md` | Designing the contract list and generating hooks |
 | `references/tooling-floor.md` | Deciding what becomes config instead of prose |
 | `references/skill-map.md` | **Preflight availability tiers**, which skill owns which phase, collisions |
+| `references/host-adapters.md` | **The session is not Claude Code** - paths, commands, enforcement per agent |
 | `references/memory-graph.md` | Graph-based code search and the three memory tiers |
-| `assets/hooks/` | Hook scripts to adapt into a target repo |
+| `assets/hooks/` | Hook scripts to adapt into a target repo - all three run standalone |

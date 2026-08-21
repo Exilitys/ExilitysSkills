@@ -47,11 +47,13 @@ Put the list in a fenced block inside the project's invariants document, and
 have the hook *read that block*. One source of truth, in prose the humans read
 and the machine parses. Do not hardcode paths into the hook.
 
-## The hooks
+## The two jobs
 
-Two, and they do different jobs.
+Two mechanisms, doing different jobs. Every host names them differently and
+some have neither; `host-adapters.md` maps the names. What follows is the
+behaviour, which is the part that does not change.
 
-### `SessionStart` — orient, don't lecture
+### Session orientation — orient, don't lecture
 
 Print computed facts: branch, uncommitted count, plans with open work, whether
 the code graph is stale, and a one-line lane + contract reminder.
@@ -65,7 +67,7 @@ Two traps, both found by running it:
 - **Checkbox counts lie** if the project marks plans complete in a status header
   while leaving boxes unticked. Read the header first; it wins.
 
-### `PreToolUse` on edit/write — block, with an exit
+### The gate itself — block, with an exit
 
 Read the contract list, match the target path, and allow when any of:
 
@@ -88,6 +90,23 @@ Then check that diff, plus unstaged, staged, and untracked files.
 Verify all three paths before believing it works: contract path blocks, ordinary
 path passes, override passes.
 
+### Where the gate fires
+
+A pre-edit hook is the best version: it stops the work before it is written.
+Only some hosts have one. So `assets/hooks/contract_gate.py` also runs from
+argv and from `--staged`, and the last of those makes a git `pre-commit` hook —
+which every host has, because git does not know which agent staged the change.
+
+| Firing point | Available on | Costs |
+|---|---|---|
+| Pre-edit hook | Claude Code, OpenCode | Nothing — the work is never written |
+| Explicit call | Any host, if the agent is told to make it | Relies on the agent remembering, which is what a gate exists to not do |
+| `pre-commit` | Everywhere | The work is already written when it fires |
+
+Pick the earliest one the host supports, and install the `pre-commit` gate
+regardless — it is the only one that protects a teammate on a different agent.
+The three cannot disagree: they read the same fenced block.
+
 ## What not to hook
 
 Only the contract gate earns one. Lane selection does not — a hook that
@@ -96,7 +115,18 @@ wrong and expensive to over-enforce. Lanes live in prose; the gate lives in code
 
 ## Portability
 
-Hooks are the one part that does not travel cleanly — the path list is
-repo-specific. So the skill **generates** them per project from the derived
-contract list rather than shipping a fixed config. On a fresh project the list
-is empty and the hooks are a no-op that grows with the repo.
+Two different portability problems, and only one of them is solved by the same
+move.
+
+**Across projects**, the path list is repo-specific — so the skill reads it from
+the project's invariants doc rather than shipping a fixed config. On a fresh
+project the list is empty and the gate is a no-op that grows with the repo.
+
+**Across agents**, the *wiring* is host-specific: hook names, config file
+formats, whether a pre-edit hook exists at all. So the script speaks three
+input shapes instead of one, and `install.py --git-gate` wires the universal
+one. See `host-adapters.md`.
+
+A gate that only fires for the agent its author happened to use protects
+nothing on a team — the first teammate on a different tool walks straight
+through it, and the list still reads as enforced.

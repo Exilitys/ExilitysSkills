@@ -6,7 +6,10 @@ Invoke the `groundwork` skill.
 
 Run its preflight first — check skill availability against the tiers in
 `references/skill-map.md`, and report gaps before promising a workflow that
-names skills the user does not have.
+names skills the user does not have. If this session is not Claude Code, read
+`references/host-adapters.md` before the preflight: several Tier 1 skills
+cannot be installed on other hosts, so their fallbacks are the plan rather than
+a gap to stop on.
 
 Then pick the mode:
 
