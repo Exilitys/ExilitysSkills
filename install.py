@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""Install groundwork into any coding agent that reads SKILL.md.
+"""Install this repo's skills into any coding agent that reads SKILL.md.
 
-The skill itself was already portable -- a `SKILL.md` with YAML frontmatter,
-plus references and scripts in the same folder, which is the Agent Skills
-format every major agent now loads. What was not portable was *delivery*: it
-shipped as a Claude Code plugin, so only Claude Code could find it.
+The skills were already portable -- a `SKILL.md` with YAML frontmatter, plus
+references and scripts in the same folder, which is the Agent Skills format
+every major agent now loads. What was not portable was *delivery*: they shipped
+as Claude Code plugins, so only Claude Code could find them.
 
-This script is the delivery layer. It puts the same folder where each host
-looks, writes the host's own flavour of the three commands, and drops an
+This script is the delivery layer. It puts each skill folder where each host
+looks, writes the host's own flavour of that plugin's commands, and drops an
 `AGENTS.md` pointer for harnesses that have no skill loader at all.
 
-    python install.py                      # detect hosts, install into this repo
-    python install.py --list               # what is detected, and where things go
+    python install.py                      # detect hosts, install every skill here
+    python install.py --list               # skills, hosts, and where things go
+    python install.py --skill groundwork   # just one
     python install.py --host codex opencode
     python install.py --scope user         # into the home-directory config
     python install.py --dry-run            # print the plan, touch nothing
@@ -39,14 +40,73 @@ from pathlib import Path
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-SKILL = "groundwork"
 HERE = Path(__file__).resolve().parent
-SOURCE = HERE / "plugins" / SKILL / "skills" / SKILL
-COMMANDS = HERE / "plugins" / SKILL / "commands"
+PLUGINS = HERE / "plugins"
 MANIFEST = ".groundwork/install.json"
+# The gate ships with groundwork; --git-gate looks for it by this path.
+GATE_REL = "assets/hooks/contract_gate.py"
 
 BEGIN = "<!-- groundwork:begin -->"
 END = "<!-- groundwork:end -->"
+
+
+@dataclass(frozen=True)
+class Skill:
+    name: str            # the skill's own directory name, which is its id
+    plugin: str          # the plugin that ships it
+    path: Path           # the skill folder itself
+    commands: Path       # that plugin's commands dir; may not exist
+    description: str     # the frontmatter description, for the AGENTS.md pointer
+
+
+def frontmatter_description(skill_md: Path) -> str:
+    """The `description:` line, folded to one line.
+
+    It is what tells a host *when* to load the skill, so it is also what an
+    AGENTS.md pointer has to carry on a host with no skill loader -- there,
+    nothing else advertises the trigger.
+    """
+    try:
+        text = skill_md.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return ""
+    if not text.startswith("---"):
+        return ""
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return ""
+    out: list[str] = []
+    capturing = False
+    for line in parts[1].splitlines():
+        if line.startswith("description:"):
+            capturing = True
+            out.append(line.partition(":")[2].strip())
+        elif capturing:
+            # YAML folds a continuation line only when it is indented.
+            if line[:1].isspace() and line.strip():
+                out.append(line.strip())
+            else:
+                break
+    return " ".join(out)
+
+
+def discover_skills() -> list[Skill]:
+    """Every skill this repo ships, found rather than listed.
+
+    A hardcoded list is one more place to forget when a plugin is added, and
+    the failure is silent -- the skill simply never installs anywhere.
+    """
+    found: list[Skill] = []
+    for skill_md in sorted(PLUGINS.glob("*/skills/*/SKILL.md")):
+        folder = skill_md.parent
+        found.append(Skill(
+            name=folder.name,
+            plugin=folder.parent.parent.name,
+            path=folder,
+            commands=folder.parent.parent / "commands",
+            description=frontmatter_description(skill_md),
+        ))
+    return found
 
 
 @dataclass(frozen=True)
@@ -189,29 +249,49 @@ def render_command(source: Path, host: Host, skill_path: str) -> tuple[str, str]
 # AGENTS.md pointer
 # --------------------------------------------------------------------------
 
-def pointer_block(skill_path: str) -> str:
-    return f"""{BEGIN}
-## groundwork
+def pointer_block(entries: list[tuple[str, str, str]]) -> str:
+    """entries: (skill name, path relative to the repo, description).
 
-`{skill_path}/SKILL.md` holds this project's context-system and workflow
-skill: how work is routed into lanes, which paths are contract paths, and what
-has to exist before code is written.
+    This block is the whole story on a harness with no skill loader: it names
+    the file, and it carries the description, which is the part that says
+    *when* to read it. A pointer without the trigger gets read once, on the
+    session where someone happened to open AGENTS.md.
+    """
+    lines = [BEGIN, "## Agent skills in this repository", ""]
+    lines.append(
+        "These are [Agent Skills](https://github.com/agentskills/agentskills): a "
+        "`SKILL.md` plus its references and scripts. **Read the relevant one "
+        "before starting work it covers**, not only when asked for it by name. "
+        "Each `SKILL.md` says which of its `references/` to load for a given "
+        "case, so read it first and follow its routing rather than loading "
+        "everything."
+    )
+    lines.append("")
+    for name, rel, description in entries:
+        lines.append(f"### `{name}`")
+        lines.append("")
+        lines.append(f"`{rel}/SKILL.md`")
+        lines.append("")
+        if description:
+            lines.append(description)
+            lines.append("")
 
-**Read it before starting a task**, not only when asked for it by name. It
-applies when: setting up or repairing this project's agent context, starting a
-feature / bug / chore / spike, or asking whether the context files are still
-true. The file lists which of its `references/` to load for each case, so read
-`SKILL.md` first and follow its routing rather than loading everything.
+    gate = next((rel for name, rel, _ in entries if name == "groundwork"), None)
+    if gate:
+        lines.append(
+            "Before editing any file, check it against `## Contract paths` in "
+            "the invariants doc that `groundwork/SKILL.md` names. A contract "
+            "path needs an approved spec on the branch first. "
+            f"`{gate}/{GATE_REL} <path>` answers that question mechanically; "
+            "exit 2 means stop."
+        )
+        lines.append("")
+    lines.append(END)
+    return "\n".join(lines)
 
-Before editing any file, check it against `## Contract paths` in the invariants
-doc that `SKILL.md` names. A contract path needs an approved spec on the branch
-first. `{skill_path}/assets/hooks/contract_gate.py <path>` answers that
-question mechanically; exit 2 means stop.
-{END}"""
 
-
-def upsert_pointer(agents_md: Path, skill_path: str, dry: bool) -> str:
-    block = pointer_block(skill_path)
+def upsert_pointer(agents_md: Path, entries: list[tuple[str, str, str]], dry: bool) -> str:
+    block = pointer_block(entries)
     if agents_md.exists():
         text = agents_md.read_text(encoding="utf-8")
         if BEGIN in text and END in text:
@@ -235,7 +315,7 @@ def upsert_pointer(agents_md: Path, skill_path: str, dry: bool) -> str:
 # copying
 # --------------------------------------------------------------------------
 
-def copy_skill(dest: Path, link_to: Path | None, dry: bool) -> str:
+def copy_skill(source: Path, dest: Path, link_to: Path | None, dry: bool) -> str:
     if dry:
         return "would link" if link_to else "would copy"
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -249,7 +329,7 @@ def copy_skill(dest: Path, link_to: Path | None, dry: bool) -> str:
             # Windows without developer mode. A copy is worse but it works,
             # and a hard failure here would strand the whole install.
             pass
-    shutil.copytree(SOURCE, dest)
+    shutil.copytree(source, dest)
     return "copied"
 
 
@@ -282,12 +362,12 @@ def remove(path: Path) -> None:
         shutil.rmtree(path)
 
 
-def fingerprint() -> str:
-    """Hash of the source skill, so a stale install is detectable."""
+def fingerprint(source: Path) -> str:
+    """Hash of a source skill, so a stale install is detectable."""
     digest = hashlib.sha256()
-    for f in sorted(SOURCE.rglob("*")):
+    for f in sorted(source.rglob("*")):
         if f.is_file():
-            digest.update(f.relative_to(SOURCE).as_posix().encode())
+            digest.update(f.relative_to(source).as_posix().encode())
             digest.update(f.read_bytes())
     return digest.hexdigest()[:16]
 
@@ -347,9 +427,11 @@ def main(argv: list[str]) -> int:
         description=__doc__.splitlines()[0],
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="\n".join(
-            f"  {h.key:<9} {h.label:<22} {h.project_skills}/{SKILL}" for h in HOSTS
+            f"  {h.key:<9} {h.label:<22} {h.project_skills}/<skill>" for h in HOSTS
         ),
     )
+    ap.add_argument("--skill", nargs="+", metavar="NAME",
+                    help="skills to install (default: all of them)")
     ap.add_argument("--host", nargs="+", metavar="KEY",
                     help="hosts to install for (default: detected + agents). "
                          f"One or more of: {', '.join(BY_KEY)}, all")
@@ -370,19 +452,36 @@ def main(argv: list[str]) -> int:
     root = Path(args.root).resolve()
     home = Path.home()
 
-    if not SOURCE.is_dir():
-        print(f"Source skill not found at {SOURCE}", file=sys.stderr)
+    available = discover_skills()
+    if not available:
+        print(f"No skills found under {PLUGINS}/*/skills/*/SKILL.md", file=sys.stderr)
         return 1
+    by_name = {s.name: s for s in available}
+
+    if args.skill:
+        unknown = [n for n in args.skill if n not in by_name]
+        if unknown:
+            print(f"Unknown skill(s): {', '.join(unknown)}. "
+                  f"Known: {', '.join(by_name)}", file=sys.stderr)
+            return 1
+        skills = [by_name[n] for n in dict.fromkeys(args.skill)]
+    else:
+        skills = available
 
     detected = detect(root, home)
 
     if args.list:
-        print(f"source: {SOURCE}  ({fingerprint()})\n")
+        print(f"source: {PLUGINS}\n")
+        print(f"{'skill':<20} {'plugin':<16} {'commands':<10} fingerprint")
+        for skill in available:
+            n = len(list(skill.commands.glob("*.md"))) if skill.commands.is_dir() else 0
+            print(f"{skill.name:<20} {skill.plugin:<16} {n:<10} {fingerprint(skill.path)}")
+        print()
         print(f"{'host':<9} {'detected':<9} {'project':<28} {'user'}")
         for host in HOSTS:
             mark = "yes" if host.key in detected else "-"
-            print(f"{host.key:<9} {mark:<9} {host.project_skills+'/'+SKILL:<28} "
-                  f"~/{host.user_skills}/{SKILL}")
+            print(f"{host.key:<9} {mark:<9} {host.project_skills+'/<skill>':<28} "
+                  f"~/{host.user_skills}/<skill>")
         print()
         for host in HOSTS:
             if host.note:
@@ -440,69 +539,94 @@ def main(argv: list[str]) -> int:
 
     base = base_for(args.scope, root, home)
     written: list[str] = []
-    shared: Path | None = None
+    installed: dict[str, dict[str, Path]] = {}   # skill -> host -> dest
     dry = args.dry_run
 
-    print(f"source : {SOURCE}  ({fingerprint()})")
+    print(f"source : {PLUGINS}")
     print(f"target : {base}  [{args.scope} scope]")
+    print(f"skills : {', '.join(s.name for s in skills)}")
     print(f"hosts  : {', '.join(keys)}\n")
 
-    for key in keys:
-        host = BY_KEY[key]
-        skills_rel = host.project_skills if args.scope == "project" else host.user_skills
-        dest = base / skills_rel / SKILL
+    for skill in skills:
+        shared: Path | None = None
+        installed[skill.name] = {}
+        for key in keys:
+            host = BY_KEY[key]
+            skills_rel = host.project_skills if args.scope == "project" else host.user_skills
+            dest = base / skills_rel / skill.name
 
-        link_to = shared if (args.link and shared is not None and shared != dest) else None
-        action = copy_skill(dest, link_to, dry)
-        if not args.link or shared is None:
-            shared = dest
-        written.append(str(dest))
-        print(f"  {action:<12} {host.label:<24} {dest}")
+            link_to = shared if (args.link and shared is not None and shared != dest) else None
+            action = copy_skill(skill.path, dest, link_to, dry)
+            if not args.link or shared is None:
+                shared = dest
+            written.append(str(dest))
+            installed[skill.name][key] = dest
+            print(f"  {action:<12} {skill.name:<18} {host.label:<24} {dest}")
 
-        cmd_rel = host.project_commands if args.scope == "project" else host.user_commands
-        if not cmd_rel or host.dialect == "none":
-            if host.dialect != "none":
-                print(f"  {'skipped':<12} {'commands':<24} (no {args.scope}-scope location)")
-            continue
-        cmd_dir = base / cmd_rel
-        skill_path = os.path.relpath(dest, root if args.scope == "project" else home)
-        skill_path = skill_path.replace(os.sep, "/")
-        if args.scope == "user":
-            skill_path = "~/" + skill_path
-        for src in sorted(COMMANDS.glob("*.md")):
-            name, body = render_command(src, host, skill_path)
-            out = cmd_dir / name
-            if not dry:
-                cmd_dir.mkdir(parents=True, exist_ok=True)
-                out.write_text(body, encoding="utf-8")
-            written.append(str(out))
-            print(f"  {'command':<12} {host.label:<24} {out}")
+            cmd_rel = host.project_commands if args.scope == "project" else host.user_commands
+            if not cmd_rel or host.dialect == "none" or not skill.commands.is_dir():
+                continue
+            cmd_dir = base / cmd_rel
+            skill_path = os.path.relpath(dest, root if args.scope == "project" else home)
+            skill_path = skill_path.replace(os.sep, "/")
+            if args.scope == "user":
+                skill_path = "~/" + skill_path
+            for src in sorted(skill.commands.glob("*.md")):
+                name, body = render_command(src, host, skill_path)
+                out = cmd_dir / name
+                if not dry:
+                    cmd_dir.mkdir(parents=True, exist_ok=True)
+                    out.write_text(body, encoding="utf-8")
+                written.append(str(out))
+                print(f"  {'command':<12} {skill.name:<18} {host.label:<24} {out}")
+
+    def preferred(skill_name: str) -> Path | None:
+        """Where a repo-level reference should point for this skill.
+
+        The vendor-neutral copy when there is one: an AGENTS.md line and a git
+        hook belong to the repository, not to whichever agent happened to be
+        installed first and might be uninstalled next.
+        """
+        places = installed.get(skill_name)
+        if not places:
+            return None
+        return places.get("agents") or next(iter(places.values()))
 
     if not args.no_agents_md and args.scope == "project":
-        neutral = base / BY_KEY["agents"].project_skills / SKILL
-        target = neutral if neutral.exists() or "agents" in keys else base / \
-            BY_KEY[keys[0]].project_skills / SKILL
-        rel = os.path.relpath(target, root).replace(os.sep, "/")
-        action = upsert_pointer(root / "AGENTS.md", rel, dry)
-        print(f"\n  AGENTS.md pointer {action} -> {rel}")
+        entries = []
+        for skill in skills:
+            target = preferred(skill.name)
+            if target is None:
+                continue
+            entries.append((
+                skill.name,
+                os.path.relpath(target, root).replace(os.sep, "/"),
+                skill.description,
+            ))
+        if entries:
+            action = upsert_pointer(root / "AGENTS.md", entries, dry)
+            listed = ", ".join(name for name, _, _ in entries)
+            print(f"\n  AGENTS.md pointer {action} -> {listed}")
 
     if args.git_gate:
-        # Prefer the vendor-neutral copy: a git hook belongs to the repo, not
-        # to whichever agent happened to be installed first.
-        neutral = base / BY_KEY["agents"].project_skills / SKILL
-        home_dir = neutral if str(neutral) in written else Path(written[0])
-        gate = home_dir / "assets" / "hooks" / "contract_gate.py"
-        action, target = install_git_gate(root, gate, dry)
-        if target is not None and action == "installed":
-            written.append(str(target))
-        print(f"  pre-commit gate {action}" + (f" -> {target}" if target else ""))
+        source = preferred("groundwork")
+        if source is None:
+            print("  pre-commit gate skipped - the gate ships with the "
+                  "groundwork skill, which was not installed")
+        else:
+            gate = source / GATE_REL
+            action, target = install_git_gate(root, gate, dry)
+            if target is not None and action == "installed":
+                written.append(str(target))
+            print(f"  pre-commit gate {action}" + (f" -> {target}" if target else ""))
 
     if not dry:
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         manifest_path.write_text(
             json.dumps(
-                {"skill": SKILL, "source": str(SOURCE), "fingerprint": fingerprint(),
-                 "scope": args.scope, "hosts": keys, "paths": written},
+                {"source": str(PLUGINS), "scope": args.scope, "hosts": keys,
+                 "skills": {s.name: fingerprint(s.path) for s in skills},
+                 "paths": written},
                 indent=2,
             ) + "\n",
             encoding="utf-8",

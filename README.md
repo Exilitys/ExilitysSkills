@@ -1,14 +1,23 @@
 # ExilitysSkills
 
-Agent skills, one so far. They are plain [Agent Skills](https://github.com/agentskills/agentskills)
+Two agent skills. They are plain [Agent Skills](https://github.com/agentskills/agentskills)
 — a `SKILL.md` with frontmatter plus its references and scripts — so they run
 on any coding agent that loads that format, not only Claude Code.
 
-**Claude Code**, as a plugin:
+| Plugin | Skill | For |
+|---|---|---|
+| **groundwork** | `groundwork` | Where truth lives and how work moves: the context system, the lanes, the contract gate |
+| **explain-diff** | `explain-diff-html` | Explaining a change to whoever has to understand it, as an interactive HTML page |
+
+They are independent — install either alone — but they meet at Lane 1 step 10b,
+where a change large enough to be reviewed cold is a change worth explaining.
+
+**Claude Code**, as plugins:
 
 ```bash
 /plugin marketplace add Exilitys/ExilitysSkills
 /plugin install groundwork@exilitys-skills
+/plugin install explain-diff@exilitys-skills
 ```
 
 **Codex, OpenCode, Cursor, Gemini CLI, or anything else** — clone and run the
@@ -19,8 +28,9 @@ git clone https://github.com/Exilitys/ExilitysSkills
 python ExilitysSkills/install.py --root /path/to/your/repo
 ```
 
-It detects which agents the repo is configured for and installs for those. See
-[Any coding agent](#any-coding-agent) below.
+It detects which agents the repo is configured for and installs both skills for
+those. `--skill groundwork` narrows it. See [Any coding agent](#any-coding-agent)
+below.
 
 ---
 
@@ -57,9 +67,9 @@ that no check can hold, and make the writing itself checkable.
 | `/groundwork-drift` | "Is any of this still true?" — run after a merge-heavy stretch |
 | `/groundwork-hooks` | Install the contract gate + session-start hooks into *this* repo |
 
-The installer writes these in each host's own command dialect, so they are real
+The installer writes commands in each host's own dialect, so these are real
 slash commands on Claude Code, OpenCode, Cursor and Gemini CLI, and prompts on
-Codex. On a host with no command mechanism, ask for groundwork by name instead.
+Codex. On a host with no command mechanism, ask for the skill by name instead.
 
 The skill also loads on its own when you ask to set up project context, make a
 workflow repeatable, or fix a repo whose AI docs have gone stale.
@@ -159,6 +169,68 @@ a gate firing in repos that never opted in is the first thing anyone uninstalls.
 
 ---
 
+## explain-diff
+
+A diff shows *what* changed. It is silent on the two things a reader actually
+needs: what the world looked like before, and why this shape was the right one.
+`explain-diff-html` produces the missing half as one self-contained HTML page.
+
+```
+/explain-diff                      # uncommitted work, or this branch vs. its merge-base
+/explain-diff feature/retry        # a branch
+/explain-diff 1284                 # a PR
+/explain-diff abc123..def456       # a range
+```
+
+Four sections, in the order a reader can absorb them:
+
+| Section | Job |
+|---|---|
+| **Background** | The system *before* the change. A deep pass for beginners, explicitly skippable; then the narrow slice this change touches |
+| **Intuition** | The core idea on toy data, with diagrams. If you stop here you can still say what the change does and why |
+| **Code** | The walkthrough, grouped by idea rather than by file |
+| **Quiz** | Five interactive questions that require the substance, with feedback on every option — including the right one |
+
+### What makes it work, and what makes it useless
+
+> **Explain the system, not the patch.**
+
+The failure mode is a page that walks the hunks in file order and teaches
+nothing, because it never establishes what the code did before — so every
+change reads as arbitrary. A reader who finishes it can recite the diff and
+still cannot predict what breaks if they revert it.
+
+That is why the expensive step is reading the *surrounding* code, not the diff.
+Everything in the skill is arranged around not skipping it.
+
+It is also deliberately **not** the PR description — different audience,
+different length — and not worth producing for a two-file change to code the
+reviewer wrote. There the diff is the explanation.
+
+### The rule a tool checks
+
+groundwork's one idea applies to this plugin too:
+
+> A rule a tool can check should be tool config, not prose.
+
+The original instruction said *"before saving the file, scan each code block
+and confirm its CSS includes `white-space: pre-wrap`"* — because a code block
+in a styled `div` silently collapses every newline into one line. That is a
+rule a tool can check, so a tool checks it:
+
+```bash
+python assets/write_target.py --slug retry-backoff   # a dated path outside the repo
+python assets/check_output.py <path>                 # 8 checks, exit 1 on failure
+```
+
+`check_output.py` catches the newline collapse, an external `<script src>` that
+will not load offline, a missing date prefix, a file written inside the repo,
+a quiz option with no feedback, a correct answer that is not one of the
+options, leftover `REPLACE` placeholders, and a missing viewport tag. Every one
+of those has shipped in a page someone believed was finished.
+
+---
+
 ## Any coding agent
 
 The skill is the Agent Skills format, which Claude Code, Codex CLI, OpenCode,
@@ -167,9 +239,10 @@ it — where the folder goes, how a command is declared, and whether a pre-edit
 hook exists at all. `install.py` is that translation layer.
 
 ```bash
-python install.py --list                    # what's detected, and where things would go
-python install.py                           # detected hosts + the neutral copy, this repo
-python install.py --host codex opencode     # name them explicitly
+python install.py --list                    # skills, hosts, and where things would go
+python install.py                           # every skill, detected hosts + the neutral copy
+python install.py --skill groundwork        # just one skill
+python install.py --host codex opencode     # name the hosts explicitly
 python install.py --scope user              # into your home config instead of the repo
 python install.py --link                    # one real copy, the rest symlinked at it
 python install.py --git-gate                # + the pre-commit contract gate
@@ -186,13 +259,13 @@ python install.py --uninstall               # reverse exactly what a run wrote
 | Gemini CLI | `.gemini/skills/` | `.gemini/commands/*.toml` |
 | Anything else | `.agents/skills/` | — |
 
-Every run also writes a marked block into `AGENTS.md` pointing at the installed
-skill. That block is what makes this work on a harness with **no skill loader
-at all** — a DeepSeek-backed agent, an in-house wrapper, whatever your team
-runs — because `AGENTS.md` is the one file essentially every coding agent
-loads. It is not as good as real skill discovery: the skill loads because the
-root file told the agent to read it, not because the description matched. It is
-enough.
+Every run also writes a marked block into `AGENTS.md` naming each installed
+skill **and carrying its description** — the part that says *when* to read it.
+That block is what makes this work on a harness with **no skill loader at
+all** — a DeepSeek-backed agent, an in-house wrapper, whatever your team runs —
+because `AGENTS.md` is the one file essentially every coding agent loads. It is
+not as good as real skill discovery: the skill loads because the root file told
+the agent to read it, not because the description matched. It is enough.
 
 Everything is recorded in `.groundwork/install.json`, so `--uninstall` removes
 exactly what was added and never guesses.
@@ -275,6 +348,14 @@ and why.
 - **The integrity test only checks names and paths.** It catches a doc naming a
   class that never existed. It cannot catch a doc that describes real classes
   doing the wrong thing.
+- **An explanation page is a real cost.** Producing a good one means reading
+  the surrounding code properly, not just the diff. `explain-diff-html` is
+  opt-in for exactly that reason, and on a two-file change to code the reviewer
+  wrote it is not worth running — the diff is already the explanation.
+- **`check_output.py` checks form, not truth.** It proves the page is
+  well-formed, offline-safe and correctly wired. It cannot tell you the
+  background section is wrong, which is the failure that matters most. That one
+  is still on the reader.
 - **Windows-first.** Written and tested on Windows with Python 3.11+; the
   scripts avoid shell assumptions but have had less exercise elsewhere.
   `--link` falls back to copying where symlinks are unavailable.
@@ -290,7 +371,7 @@ and why.
 ## Repo layout
 
 ```
-install.py                          cross-agent installer
+install.py                          cross-agent installer (finds every skill below)
 .claude-plugin/marketplace.json     Claude Code marketplace manifest
 plugins/groundwork/
   .claude-plugin/plugin.json
@@ -312,6 +393,20 @@ plugins/groundwork/
       tests/                        integrity templates (Vitest + pytest)
       drift_report.py               Mode C mechanical pass
       lane_adoption.py              does anyone follow the workflow
+plugins/explain-diff/
+  .claude-plugin/plugin.json
+  commands/                         /explain-diff
+  skills/explain-diff-html/
+    SKILL.md                        the flow: resolve, read around, write, check
+    references/
+      structure.md                  the four sections and the transitions
+      diagrams.md                   diagram families, HTML patterns, never ASCII
+      quiz.md                       questions that test the model, not the text
+      html-contract.md              self-contained, responsive, the whitespace trap
+    assets/
+      template.html                 working scaffold: TOC, callouts, diagrams, quiz JS
+      write_target.py               a dated path outside the repo, cross-platform
+      check_output.py               verifies the page before you claim it works
 ```
 
 ## License

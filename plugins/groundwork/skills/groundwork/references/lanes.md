@@ -30,9 +30,29 @@ A new feature or user-visible capability.
 | 8 | Verify | `superpowers:verification-before-completion` — run the real commands, read the output |
 | 9 | Prove | `/check verify` in the real app; `/check review` on a fresh model |
 | 10 | Review | `superpowers:requesting-code-review` → `receiving-code-review` |
+| 10b | **Explain it, if it is large or unfamiliar** | `explain-diff-html` — only when a reviewer would otherwise read it cold. See below |
 | 11 | Write the prose | `/document pr` |
 | 12 | Fold back | `/sync`, `finishing-a-development-branch`, rebuild the graph |
 | 13 | If it needed proving | write a verification report — **including negative results** |
+
+### When step 10b earns its place
+
+An explanation page is a real cost — it means reading the surrounding code
+properly, not just the diff — so it is opt-in, not routine. It pays when:
+
+- the change is large enough that a reviewer will otherwise skim it;
+- it lands in an area the reviewers do not know;
+- it encodes a decision worth preserving past the review, which a PR thread
+  will bury within a month;
+- someone is being onboarded, and this change is a good way in.
+
+It does **not** pay on a two-file change to code the reviewer wrote. There, the
+diff is the explanation, and a document restating it is noise with a quiz
+attached.
+
+**It is not the PR description.** Different audience, different length: the PR
+body is for someone deciding whether to look, the page is for someone who has
+decided and now has to understand. Step 11 still happens.
 
 ### Design skills and a decided direction
 
@@ -64,6 +84,10 @@ should run first. It stops being right the moment a direction is approved.
 6. Verify: full suite.
 7. `/sync` **only if** a doc is now false. The integrity test answers this.
 8. If it revealed a design flaw, file a backlog row **with a revisit condition**.
+9. If the root cause was genuinely subtle — the kind the team will hit again —
+   `explain-diff-html`. A bug whose explanation is "the ordering flipped in the
+   retry path" is worth one page and no more; one that took a day to find is
+   worth the page precisely because the next person should not spend the day.
 
 ---
 
@@ -96,6 +120,7 @@ Refactor, rename, dependency bump.
 | Situation | Reach for |
 |---|---|
 | Unfamiliar area of the codebase | `zoom-out`, then the graph |
+| Someone has to understand a change they did not write | `explain-diff-html` |
 | Running out of context | `handoff` |
 | Codebase question | the graph before grep |
 | Claiming something works | `verification-before-completion` |
@@ -108,3 +133,6 @@ Refactor, rename, dependency bump.
 - **Letting a Lane 3 grow.** If tests had to change, stop and re-lane it.
 - **Claiming green without running it.** Evidence before assertions.
 - **Treating the gate as advice.** It is membership in a list.
+- **Writing an explanation page instead of a review.** Step 10b comes after
+  step 10, never instead of it. A page explaining a change nobody reviewed
+  explains it very clearly and catches nothing.

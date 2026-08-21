@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<!--
+  explain-diff-html scaffold. Replace the content; keep the structure.
+
+  What is already handled for you, and should not be rebuilt:
+    - responsive layout, 70ch measure, phone breakpoint at 640px
+    - light/dark via custom properties (dark overrides variables only)
+    - .callout / .callout.warn / .callout.key
+    - .diagram / .node / .arrow / .compare  - the three diagram families
+    - overflow-x on pre, table and .compare so nothing forces the page sideways
+    - quiz interaction: click to reveal, per-option feedback, icon + colour
+
+  Two things the checker will fail you on, so do them as you write:
+    - every code block is <pre> (or carries white-space: pre-wrap)
+    - nothing loads from the network: no CDN, no font URL, no remote <img>
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REPLACE - what this change does</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #5c6370;
+    --rule: #e2e5ea;
+    --surface: #f6f7f9;
+    --accent: #2a5db0;
+    --ok-bg: #e7f5ec;   --ok-fg: #14683a;   --ok-line: #2f9e5f;
+    --no-bg: #fdeceb;   --no-fg: #8f2018;   --no-line: #d1443a;
+    --warn-bg: #fdf4e3; --warn-line: #d69e2e;
+    --key-bg: #eef3fc;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d;      --fg: #e6e8eb;      --muted: #9aa3ae;
+      --rule: #2c3038;    --surface: #1e2128; --accent: #7aa5f0;
+      --ok-bg: #17301f;   --ok-fg: #7fd7a0;   --ok-line: #2f9e5f;
+      --no-bg: #331c1a;   --no-fg: #f0a19a;   --no-line: #d1443a;
+      --warn-bg: #302716; --warn-line: #d69e2e;
+      --key-bg: #1b2230;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2rem 1.25rem 6rem;
+    background: var(--bg); color: var(--fg);
+    font-family: var(--sans); font-size: 17px; line-height: 1.65;
+  }
+  main { max-width: 70ch; margin: 0 auto; }
+  h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 .5rem; }
+  h2 {
+    font-size: 1.45rem; margin: 3.5rem 0 1rem;
+    padding-top: 1.25rem; border-top: 1px solid var(--rule);
+  }
+  h3 { font-size: 1.12rem; margin: 2rem 0 .5rem; }
+  p, li { overflow-wrap: break-word; }
+  a { color: var(--accent); }
+  .subtitle { color: var(--muted); margin: 0 0 2rem; font-size: 1.05rem; }
+
+  /* Table of contents */
+  nav.toc {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 8px; padding: 1rem 1.25rem; margin: 0 0 2.5rem;
+  }
+  nav.toc h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em;
+               color: var(--muted); margin: 0 0 .5rem; border: 0; padding: 0; }
+  nav.toc ol { margin: 0; padding-left: 1.2rem; }
+  nav.toc li { margin: .2rem 0; }
+
+  /* Code. The <pre> rule below is the one that must never be removed. */
+  pre {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+    padding: .9rem 1rem; overflow-x: auto;
+    white-space: pre;                 /* newlines survive; see html-contract.md */
+    font-family: var(--mono); font-size: .86rem; line-height: 1.5;
+  }
+  code { font-family: var(--mono); font-size: .88em;
+         background: var(--surface); padding: .1em .35em; border-radius: 4px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .add { color: var(--ok-fg); }       /* always paired with a +/- glyph, */
+  .del { color: var(--no-fg); }       /* never colour alone */
+
+  table { width: 100%; border-collapse: collapse; font-size: .93rem; }
+  .scroll-x { overflow-x: auto; margin: 1.25rem 0; }
+  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--rule); }
+  th { color: var(--muted); font-weight: 600; }
+
+  /* Callouts */
+  .callout {
+    border-left: 4px solid var(--accent); background: var(--key-bg);
+    padding: .85rem 1rem; margin: 1.5rem 0; border-radius: 0 6px 6px 0;
+  }
+  .callout .label {
+    display: block; font-size: .72rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: .25rem;
+  }
+  .callout > :last-child { margin-bottom: 0; }
+  .callout.warn { border-left-color: var(--warn-line); background: var(--warn-bg); }
+  .callout.key  { border-left-color: var(--ok-line);  background: var(--ok-bg); }
+
+  .skip-note { font-size: .93rem; color: var(--muted); font-style: italic; }
+
+  /* Diagram family: nodes, arrows, and side-by-side comparison */
+  .diagram {
+    border: 1px solid var(--rule); border-radius: 8px;
+    padding: 1.25rem 1rem .75rem; margin: 1.5rem 0; background: var(--surface);
+  }
+  .row { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; justify-content: center; }
+  .node {
+    border: 1px solid var(--rule); border-radius: 6px; background: var(--bg);
+    padding: .5rem .8rem; font-size: .88rem; text-align: center; min-width: 6.5rem;
+  }
+  .node .title { font-weight: 600; display: block; }
+  .node .meta { color: var(--muted); font-size: .78rem; font-family: var(--mono); }
+  .arrow { color: var(--muted); font-size: .78rem; text-align: center; padding: 0 .15rem; }
+  .arrow::before { content: "\2192"; display: block; font-size: 1.1rem; color: var(--fg); }
+  .arrow .payload { font-family: var(--mono); }
+  .caption { color: var(--muted); font-size: .85rem; margin: .75rem 0 0; text-align: center; }
+
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .compare > div { min-width: 0; }
+  .compare h4 { margin: 0 0 .5rem; font-size: .8rem; text-transform: uppercase;
+                letter-spacing: .06em; color: var(--muted); }
+
+  /* Quiz */
+  .q { border: 1px solid var(--rule); border-radius: 8px; padding: 1.1rem 1.25rem; margin: 1.5rem 0; }
+  .q .stem { font-weight: 600; margin: 0 0 .75rem; }
+  .q ul { list-style: none; margin: 0; padding: 0; }
+  .q li { margin: .4rem 0; }
+  .q button {
+    display: flex; gap: .6rem; align-items: flex-start; width: 100%; text-align: left;
+    font: inherit; font-size: .95rem; color: inherit; cursor: pointer;
+    background: var(--bg); border: 1px solid var(--rule);
+    border-radius: 6px; padding: .55rem .75rem;
+  }
+  .q button:hover:not([disabled]) { border-color: var(--accent); }
+  .q button[disabled] { cursor: default; }
+  .q .mark { font-family: var(--mono); font-weight: 700; min-width: 1.2em; }
+  .q button.correct { background: var(--ok-bg); border-color: var(--ok-line); color: var(--ok-fg); }
+  .q button.wrong   { background: var(--no-bg); border-color: var(--no-line); color: var(--no-fg); }
+  .q .feedback {
+    margin: .85rem 0 0; padding: .7rem .85rem; border-radius: 6px;
+    background: var(--surface); font-size: .92rem; display: none;
+  }
+  .q .feedback.shown { display: block; }
+  .q .feedback .verdict { font-weight: 700; }
+
+  @media (max-width: 640px) {
+    body { font-size: 16px; padding: 1.25rem .9rem 4rem; }
+    .compare { grid-template-columns: 1fr; }
+    .arrow::before { content: "\2193"; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <h1>REPLACE: what the change does, in a phrase</h1>
+  <p class="subtitle">REPLACE: one sentence naming the change and its target
+     (branch, PR, commit range).</p>
+
+  <nav class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#background">Background</a> — the system before this change</li>
+      <li><a href="#intuition">Intuition</a> — the core idea, on toy data</li>
+      <li><a href="#code">The code</a> — what actually changed</li>
+      <li><a href="#quiz">Quiz</a> — five questions</li>
+    </ol>
+  </nav>
+
+  <!-- ===================================================== 1. BACKGROUND -->
+  <h2 id="background">Background</h2>
+
+  <p class="skip-note">
+    New to this part of the system? The next few paragraphs build up from first
+    principles. If you already know how REPLACE works, skip ahead to
+    <a href="#background-narrow">the part this change touches</a>.
+  </p>
+
+  <p>REPLACE: deep background. The domain, the vocabulary, the shape of the
+     system. Written as the reader would have found it before the change —
+     nothing here is in the past tense yet.</p>
+
+  <h3 id="background-narrow">The part this change touches</h3>
+
+  <p>REPLACE: the narrow slice. The function, its callers, the invariant that
+     holds today, the data as it is currently shaped.</p>
+
+  <div class="diagram">
+    <div class="row">
+      <div class="node"><span class="title">Client</span><span class="meta">alice</span></div>
+      <div class="arrow"><span class="payload">POST /sync {rev: 4}</span></div>
+      <div class="node"><span class="title">API</span><span class="meta">handler.ts</span></div>
+      <div class="arrow"><span class="payload">write rev 5</span></div>
+      <div class="node"><span class="title">Store</span><span class="meta">rev: 4</span></div>
+    </div>
+    <p class="caption">REPLACE. Note the example data on each arrow — that is
+       the part a reader cannot infer from a bare label.</p>
+  </div>
+
+  <p>REPLACE: end on the tension. What this design does not handle, what broke,
+     what was asked for — so the reader arrives at the next section wanting the
+     answer.</p>
+
+  <!-- ====================================================== 2. INTUITION -->
+  <h2 id="intuition">Intuition</h2>
+
+  <p>REPLACE: the essence, on the same toy data. A reader who stops here should
+     be able to say what the change does and why, without seeing real code.</p>
+
+  <div class="diagram">
+    <div class="compare">
+      <div>
+        <h4>Before</h4>
+        <div class="row"><div class="node"><span class="title">REPLACE</span></div></div>
+      </div>
+      <div>
+        <h4>After</h4>
+        <div class="row"><div class="node"><span class="title">REPLACE</span></div></div>
+      </div>
+    </div>
+    <p class="caption">REPLACE: say where to look, not what it is.</p>
+  </div>
+
+  <div class="callout key">
+    <span class="label">Key idea</span>
+    <p>REPLACE: the one sentence the whole change turns on.</p>
+  </div>
+
+  <div class="callout warn">
+    <span class="label">The trade-off</span>
+    <p>REPLACE: what this costs. A change that is better in every respect is
+       one the reader will not believe, correctly.</p>
+  </div>
+
+  <!-- =========================================================== 3. CODE -->
+  <h2 id="code">The code</h2>
+
+  <p>REPLACE: the transition — from the picture to the machinery.</p>
+
+  <h3>The core change</h3>
+  <p>REPLACE: the one hunk that <em>is</em> the idea. Name the file as
+     <code>path/to/file.ts</code>.</p>
+
+<pre><span class="del">- if (rev !== current) return conflict();</span>
+<span class="add">+ if (rev &lt; current) return conflict();</span>
+<span class="add">+ if (rev &gt; current) return ahead();</span></pre>
+
+  <p>REPLACE: what those lines do, and why this shape.</p>
+
+  <h3>What it required</h3>
+  <p>REPLACE: call sites, types, schema, config.</p>
+
+  <h3>Mechanical fallout</h3>
+  <p>REPLACE, in one line and grouped: "the rename touched 34 call sites; none
+     of them interesting."</p>
+
+  <h3>Tests</h3>
+  <p>REPLACE: what they pin — the clearest statement of intended behaviour
+     anywhere in the diff.</p>
+
+  <!-- =========================================================== 4. QUIZ -->
+  <h2 id="quiz">Quiz</h2>
+  <p>REPLACE: an invitation, not an exam. Five questions; feedback on click.</p>
+
+  <div class="q" data-q="q1">
+    <p class="stem">1. REPLACE: a question answerable only from a correct model.</p>
+    <ul>
+      <li><button type="button" data-opt="a"><span class="mark">A</span><span>REPLACE</span></button></li>
+      <li><button type="button" data-opt="b"><span class="mark">B</span><span>REPLACE — a plausible distractor: the previous behaviour</span></button></li>
+      <li><button type="button" data-opt="c"><span class="mark">C</span><span>REPLACE</span></button></li>
+      <li><button type="button" data-opt="d"><span class="mark">D</span><span>REPLACE</span></button></li>
+    </ul>
+    <p class="feedback"></p>
+  </div>
+
+  <!-- Duplicate the .q block above for q2..q5, with matching keys below. -->
+
+  <h2>In one sentence</h2>
+  <p>REPLACE: what the change does, now that the reader has everything needed
+     to understand it. Then name anything left genuinely unexplained.</p>
+
+</main>
+
+<script>
+  // Answer key. `correct` is the option id; `feedback` covers EVERY option,
+  // including the right one - confirmation without a reason leaves the reader
+  // unsure whether they reasoned or guessed.
+  const ANSWERS = {
+    q1: {
+      correct: "b",
+      feedback: {
+        a: "Not quite - that is what happens when the revision is ahead, not behind.",
+        b: "Right: the comparison is now ordered, so equal revisions fall through.",
+        c: "That was the behaviour before this change; see Intuition.",
+        d: "This confuses the client's revision with the store's."
+      }
+    }
+    // q2..q5
+  };
+
+  document.querySelectorAll(".q").forEach(function (block) {
+    const key = ANSWERS[block.dataset.q];
+    if (!key) return;
+    const out = block.querySelector(".feedback");
+
+    block.querySelectorAll("button[data-opt]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        const picked = btn.dataset.opt;
+        const right = picked === key.correct;
+
+        // Lock the question, but keep every option visible so the reader can
+        // compare. Mark with an icon as well as colour.
+        block.querySelectorAll("button[data-opt]").forEach(function (b) {
+          b.disabled = true;
+          const mark = b.querySelector(".mark");
+          if (b.dataset.opt === key.correct) {
+            b.classList.add("correct");
+            mark.textContent = "✓";
+          } else if (b.dataset.opt === picked) {
+            b.classList.add("wrong");
+            mark.textContent = "✗";
+          }
+        });
+
+        out.innerHTML = "";
+        const verdict = document.createElement("span");
+        verdict.className = "verdict";
+        verdict.textContent = right ? "✓ Correct. " : "✗ Not quite. ";
+        out.appendChild(verdict);
+        out.appendChild(document.createTextNode(key.feedback[picked] || ""));
+        out.classList.add("shown");
+      });
+    });
+  });
+</script>
+</body>
+</html>
