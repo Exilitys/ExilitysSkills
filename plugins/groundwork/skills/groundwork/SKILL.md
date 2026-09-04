@@ -56,7 +56,10 @@ follow it. Summary:
    every row is a gap and you generate all nine.
 3. **Write only the gaps**, plus the routing table into `CLAUDE.md`.
 4. **Lay the tooling floor** - `references/tooling-floor.md`.
-5. **Offer the hooks** - `references/contract-gate.md`. Opt-in, shown first.
+5. **On a component-based UI, concerns 5-7 route through
+   `references/design-system.md`** - the component gallery is shadcn's and
+   Magic UI's registries queried over MCP, not a hand-written catalog.
+6. **Offer the hooks** - `references/contract-gate.md`. Opt-in, shown first.
    On a host with no pre-edit hook, offer the git pre-commit gate instead;
    `references/host-adapters.md` has the mechanics.
 
@@ -131,6 +134,7 @@ the upgrade path. Those are deferrals; harvest them into the backlog at sync.
 | `references/lanes.md` | Mode B - full lane definitions, skill chaining per phase |
 | `references/contract-gate.md` | Designing the contract list and generating hooks |
 | `references/tooling-floor.md` | Deciding what becomes config instead of prose |
+| `references/design-system.md` | Concerns 5-7 on a component-based UI - shadcn/Magic UI over MCP instead of a hand-written catalog |
 | `references/skill-map.md` | **Preflight availability tiers**, which skill owns which phase, collisions |
 | `references/host-adapters.md` | **The session is not Claude Code** - paths, commands, enforcement per agent |
 | `references/memory-graph.md` | Graph-based code search and the three memory tiers |

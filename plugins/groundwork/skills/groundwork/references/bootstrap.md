@@ -16,11 +16,18 @@ ls AGENTS.md CLAUDE.md GEMINI.md CONTEXT.md README.md
 find docs -type f 2>/dev/null | head -50
 find . -name "AGENTS.md" -not -path "*/node_modules/*"
 ls -d .claude .codex .opencode .cursor .gemini .agents 2>/dev/null
+cat components.json .mcp.json 2>/dev/null
 ```
 
-That last line also tells you **which agents this team actually uses**, which
-decides the root filename in step 4 and the enforcement mechanism in step 5.
-More than one means the placement rules below matter more, not less.
+That last line but one also tells you **which agents this team actually
+uses**, which decides the root filename in step 4 and the enforcement
+mechanism in step 5. More than one means the placement rules below matter more,
+not less.
+
+The last line tells you whether concerns 5-7 already have live component
+sourcing wired up — `components.json` and `.mcp.json` are what shadcn's and
+Magic UI's MCP setup write. Present or absent, this is what step 6 offers to
+fix, per `design-system.md`.
 
 Then read enough of what you find to know whether it is *current* or
 aspirational. A doc that names a class is a claim; check the class exists.
@@ -35,7 +42,7 @@ aspirational. A doc that names a class is a claim; check the class exists.
 | 4 | **How libraries are used** | *usually nothing* | per-directory `AGENTS.md` §2 |
 | 5 | Visual tokens | a CSS/theme file + its tests | `ui-tokens.md` |
 | 6 | Design direction and rules | a design doc | `ui-rules.md` |
-| 7 | Component gallery | the component directory itself | `ui-registry.md` |
+| 7 | Component gallery | the component directory itself | a one-line pointer, **not** a catalog |
 | 8 | What's next | backlog, roadmap, issues | `build-plan.md` |
 | 9 | Where we are | git + status headers + a hook | `progress-tracker.md` |
 
@@ -43,6 +50,16 @@ Concerns **3 and 4 are the reliable gaps.** Most projects document what they
 are building and almost none document how it is written or which library
 version's docs to trust. Expect those two to be real work and the rest to be
 pointers.
+
+**Concerns 5-7, on a project with a component-based UI, read
+`references/design-system.md` before generating anything.** Concern 7
+especially — its "generate if missing" is a pointer on purpose. The old
+default of writing `ui-registry.md` as a hand-maintained catalog is exactly
+the anti-pattern this step already names below: the directory cannot go
+stale, the catalog can. `design-system.md` covers sourcing components live
+from shadcn's and Magic UI's registries over MCP instead, and what concern 6's
+design doc should say about which registry supplies what. Skip the file
+entirely on a repo with no frontend.
 
 Two more concerns exist that no starter kit includes, and they are the ones the
 workflow actually runs on:
@@ -175,6 +192,11 @@ escaping to get wrong.
 See `contract-gate.md`. Show the generated config and the derived contract list
 before writing anything. On a fresh project the list is usually empty and the
 hooks are a no-op — that is fine, they grow with the project.
+
+On a project with a component-based UI and no `components.json`/`.mcp.json`
+yet, offer the same way: show the MCP config and the registries block from
+`design-system.md` before writing either. Opt-in, shown first, same as the
+gate.
 
 ## Anti-patterns
 

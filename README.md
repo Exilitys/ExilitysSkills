@@ -58,6 +58,7 @@ that no check can hold, and make the writing itself checkable.
 | **Integrity tests** | Working Vitest and pytest templates that fail when your docs name something that does not exist |
 | **Drift report** | Finds context files whose subject moved after they were last touched |
 | **Adoption report** | Measures whether the workflow is actually followed, or just documented |
+| **Design system** | On a component-based UI, sources primitives live from shadcn's and Magic UI's registries over MCP instead of a hand-written component catalog |
 
 ### Commands
 
@@ -388,6 +389,7 @@ plugins/groundwork/
       drift-audit.md                Mode C: "is this still true"
       contract-gate.md              designing the list, generating hooks
       tooling-floor.md              what becomes config instead of prose
+      design-system.md              shadcn + Magic UI over MCP, instead of a hand-written component catalog
       skill-map.md                  preflight tiers, phase ownership
       host-adapters.md              running on Codex / OpenCode / Cursor / Gemini / anything
       memory-graph.md               graph search, memory tiers
