@@ -48,6 +48,22 @@ The failure this prevents is **approval theatre**: a finished document arrives,
 it is too large to review, it gets skimmed and waved through - and now every
 unexamined decision inside it carries a signature.
 
+## And the one about who says yes
+
+> An agent never records its own approval.
+
+Everything this skill produces is a **draft** until a human accepts it. The
+agent's job at that moment is to record who accepted it and when - not to
+decide that it is accepted. An agent that can write `Status. Approved` on its
+own work has not passed a gate; it has printed one.
+
+That is groundwork's contract gate finally saying what *approval* means, and it
+covers every artifact a planning phase emits - the spec, the diagram, the build
+plan, the generated context docs. `references/acceptance.md` has the review
+packet, the acceptance record, and how change requests work (they are the
+normal path, not a failure). `check_spec.py` fails a spec marked approved with
+no named human approver.
+
 ## What counts as enough detail
 
 The user asking for this usually wants "extreme detail", and they are right to
@@ -209,18 +225,53 @@ condition, leftover `TBD`s, weasel words standing in for numbers. Paste its
 output. The same rule the rest of this repo runs on - a rule a tool can check
 should not be left to a careful reading at the end of a long session.
 
-### 6. Approve, then hand off
+### 6. Draw it - before anyone accepts it
 
-> **Checkpoint 5.** The whole spec - a *re-read*, not a first read. Everything
-> in it was agreed at checkpoints 1-4, so this should be a formality. If it is
-> not, an earlier checkpoint was skipped; go back to it rather than defending
-> the draft.
+Route to `archify` to visualise the spec, the system design and the
+architecture. Full guidance in `references/visualise.md`; if `archify` is not
+installed, draw it by hand in Mermaid rather than skipping it.
 
-Get explicit sign-off. An approved spec may not carry open questions - the
-checker enforces it. Then `references/handoff.md`: the project goes to
-**groundwork Mode A**, which inventories what you just wrote, resolves concerns
-1, 2 and 11 to it rather than generating placeholders, and sets up the context
-system, the lanes and the gate around it.
+This sits **before** the gate on purpose. The diagram is a review instrument,
+not documentation: a reviewer holding twelve sections of prose in working
+memory misses a boundary in the wrong place, and the same reviewer looking at a
+picture finds it in seconds. Drawing it afterwards documents a decision nobody
+could see when they made it.
+
+It is also a check on the spec itself - **a design you cannot draw is not
+finished.** A box that needs an arrow to everything, a boundary that cuts an
+entity in half, an arrow whose failure behaviour section 8 never named: each is
+the spec telling you something before the compiler does. Where the drawing and
+the prose disagree, the prose is not automatically right.
+
+### 7. The gate - a human reviews and accepts
+
+> **Checkpoint 5.** The whole spec plus its diagram - a *re-read*, not a first
+> read. Everything in it was agreed at checkpoints 1-4, so this should be a
+> formality. If it is not, an earlier checkpoint was skipped; go back to it
+> rather than defending the draft.
+
+`references/acceptance.md` is the mechanics. In short: hand over the **review
+packet** - the artifact, the diagram, what changed since they last looked, the
+open questions, and the two or three places you want them to look hardest -
+then **stop and wait.** Nothing downstream starts here.
+
+- **They accept** → record `Status. Accepted <date> by @who` and the version
+  they saw. You record it; you do not decide it.
+- **They ask for changes** → that is the gate working. Change what they asked
+  and only that, re-present the *diff* rather than the whole document, and come
+  back here. There is no round limit.
+- **They say nothing** → nothing has been accepted. Silence is not approval any
+  more than it is agreement.
+
+An accepted spec may not carry open questions, and may not be marked approved
+without a named human approver - the checker enforces both.
+
+### 8. Hand off
+
+`references/handoff.md`: the project goes to **groundwork Mode A**, which
+inventories what you wrote, resolves concerns 1, 2 and 11 to it rather than
+generating placeholders, and sets up the context system, the lanes and the gate
+around it. The diagram in `docs/architecture/` resolves concern 2 the same way.
 
 Say plainly what blueprint did **not** decide, so groundwork does not read
 silence as settled.
@@ -244,7 +295,9 @@ groundwork applies to everything else, applied to the pair of skills.
 | `references/intake.md` | Step 1 - normalising any input shape, said vs. inferred |
 | `references/interrogation.md` | Step 2 - the question taxonomy, routing, the stopping rule |
 | `references/spec-format.md` | Steps 3-4 - the document's sections, caps, and how each fails |
-| `references/handoff.md` | Step 6 - the seam to groundwork, and what it expects to find |
+| `references/visualise.md` | Step 6 - drawing the design as a review instrument, and routing to `archify` |
+| `references/acceptance.md` | Step 7 - **the human gate**: the review packet, the acceptance record, change requests |
+| `references/handoff.md` | Step 8 - the seam to groundwork, and what it expects to find |
 | `references/skill-map.md` | Preflight - which skills this routes to, and the fallbacks |
 | `assets/spec-template.md` | Step 4 - start here rather than from an empty file |
 | `assets/check_spec.py` | Step 5 - before claiming the spec is ready |

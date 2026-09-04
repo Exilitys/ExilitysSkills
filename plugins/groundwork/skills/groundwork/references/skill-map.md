@@ -84,6 +84,13 @@ python install.py --skill explain-diff-html      # any other host
 `ui-ux-pro-max`, `ui-styling`, a test-writing skill (`/test`), a minimalism
 skill (`ponytail`), `zoom-out`, a graph skill (`graphify`).
 
+**`archify` is the exception in this tier: its step is not optional.** It draws
+the spec, system design and architecture at Lane 1 step 3b, before the gate,
+because the drawing is what makes the human review effective. Missing the skill
+degrades the drawing to hand-written Mermaid; it does not remove the step.
+`graphify` searches code that exists, `archify` draws a design that does not
+yet - different jobs, and only the second one is a review instrument.
+
 **Component primitives are not a skill row.** Earlier versions of this table
 listed a `shadcn` skill here; the real mechanism is the shadcn and Magic UI MCP
 servers, configured at bootstrap per `design-system.md` — not gated by this
@@ -137,6 +144,7 @@ context maintenance, PR prose. These are usually a different family's strength.
 | Verify | `superpowers:verification-before-completion`, then a check/verify skill |
 | Review | `requesting-` → `receiving-code-review` |
 | PR prose | a document skill |
+| Draw a design before it is built | `archify` (fallback: Mermaid by hand) |
 | Explain a change to a reader | `explain-diff-html` |
 | Fold context back | a sync skill |
 | Out of context | `handoff` |

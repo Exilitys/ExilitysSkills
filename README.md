@@ -176,6 +176,43 @@ behaviour — and forbids it on anything their compilers would have agreed on
 anyway. Twelve pages of CRUD endpoints with no concurrency model is a spec that
 fails the test at full length.
 
+### Drawn before it is reviewed, accepted by a human
+
+Two hard stops before any code gets written.
+
+**The design gets drawn first.** After the spec is stressed and before anyone
+accepts it, `archify` visualises the spec, system design and architecture. That
+order is deliberate: the diagram is a *review instrument*, not documentation. A
+reviewer holding twelve sections in working memory misses a boundary in the
+wrong place; the same reviewer looking at a picture finds it in seconds. Drawn
+after approval it documents a decision nobody could see when they made it. It
+is also a check on the spec — **a design you cannot draw is not finished**, and
+a box that needs an arrow to everything is the spec telling you something
+before the compiler does. No `archify`? Draw it by hand in Mermaid; the step
+does not go away.
+
+**Then a human accepts it — and the agent is not that human.**
+
+> An agent never records its own approval.
+
+Everything the planning phase emits is a **draft** until a person accepts it:
+the spec, the diagram, the build plan, and groundwork's generated context docs.
+The agent's job at that moment is to record *who* accepted and *when*, not to
+decide that it is accepted. `check_spec.py` fails a spec marked approved with
+no named human approver — an agent that can write `Status. Approved` on its own
+work hasn't passed a gate, it has printed one.
+
+The gate hands over a **review packet**: the artifact, the diagram, what changed
+since the last round, the open questions, and the two or three places you want
+looked at hardest — then stops. Changes requested is the gate *working*, not a
+failure: change what was asked and only that, re-present the diff rather than
+the whole document, and come back. No round limit.
+
+This is also what groundwork's contract gate always meant. It said "spec,
+approval, then build" and never defined *approval*; now it does, and the same
+rule covers Lane 1's plan — a plan is not a lesser artifact than a spec, it is
+just the one most often skimmed because it looks like a checklist.
+
 ### The rule a tool checks
 
 Same move as everywhere else in this repo:
@@ -524,6 +561,8 @@ plugins/groundwork/
       intake.md                     any input shape; said vs. inferred
       interrogation.md              the question taxonomy, and when to stop
       collaboration.md              the checkpoints; propose vs. announce; open questions
+      visualise.md                  drawing the design as a review instrument; archify
+      acceptance.md                 the human gate: review packet, acceptance record, change requests
       spec-format.md                sections, the decision record, falsifiability
       handoff.md                    the seam to groundwork; re-entry paths
       skill-map.md                  what it routes to, and the fallbacks

@@ -103,6 +103,13 @@ it).
 - **Touches a contract path -> STOP.** Spec, approval, then build.
 - **Touches none ->** proceed in one session.
 
+**What "approval" means:** a human read it and accepted it. Not the agent
+deciding it looks finished. `blueprint/references/acceptance.md` is the
+mechanics - the review packet, the acceptance record naming who and when, and
+change requests as the normal path. It covers every artifact a planning phase
+emits: a spec, a build plan, generated context docs, an architecture diagram.
+**An agent never records its own approval.**
+
 It is membership in a list, not a judgment about importance. A contract path is
 one where breaking it is *cheap and silent*: port signatures, migrations, a
 shared runtime script, design tokens, prompts - plus any deferred item carrying
@@ -130,6 +137,11 @@ work, because the third occurrence is still possible.
 the upgrade path. Those are deferrals; harvest them into the backlog at sync.
 
 **Evidence before assertions.** Run the command, read the output, then claim.
+
+**A plan is gated like a spec.** It decides sequence, what ships first and what
+is deferred - and it is the artifact most often generated, skimmed and executed,
+because it looks like a checklist rather than a set of decisions. A human
+accepts the plan before any file is edited.
 
 ## References
 

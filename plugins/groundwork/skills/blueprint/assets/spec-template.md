@@ -12,9 +12,20 @@
 
 # <Project> - specification
 
-**Status.** Draft | Approved YYYY-MM-DD
+**Status.** Draft
 **Owner.** <who signs off>
 **Supersedes.** <earlier doc, or none>
+**Diagram.** <docs/architecture/... - drawn before review, not after>
+
+<!--
+  Leave Status as Draft. An agent does not record its own approval: once a
+  human has actually accepted it, replace the line with
+
+      **Status.** Accepted YYYY-MM-DD by @who
+      **Reviewed.** <which version they saw>
+
+  check_spec.py fails a spec marked approved with no named approver.
+-->
 
 ---
 
@@ -149,3 +160,12 @@ may not - check_spec.py fails on it.>
 
 - **<Question>.** Asked <date>, not answered. Blocks <D-00N / which section>.
   **If unanswered at build time:** <what happens by default>.
+
+## 14. Review log
+
+<One row per round. A reviewer asking for changes is the gate working; the log
+is what makes round two reviewable as a diff rather than a re-read.>
+
+| Round | Date | Reviewer | Outcome | What changed |
+|---|---|---|---|---|
+| 1 | <date> | <@who> | <changes requested / accepted> | <the diff, in a line> |

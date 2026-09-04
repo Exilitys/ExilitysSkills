@@ -23,6 +23,7 @@ every skill being absent.
 | Step 3 - counterweight | `ponytail` (minimalism) | deletes the speculative layer while it is still one line | ask of each component: what breaks if we cut it |
 | Step 3 - stack craft | `matt-pocock` (TypeScript), `ui-styling`, others | idiom for the chosen stack | note the stack decision and leave idiom to the build |
 | Step 5 - stress | `grill-me` again, on the spec | internal contradictions, not missing constraints | re-read the spec against the falsifiability table |
+| Step 6 - visualise | `archify` | the spec, system design and architecture drawn, as the review instrument | draw it by hand in Mermaid - `visualise.md`. Do not skip it; the diagram is doing review work |
 | Step 6 - handoff | `groundwork` | the context system around the approved spec | write the root file by hand; slower and it drifts |
 
 ## Ordering that matters
@@ -35,6 +36,11 @@ decision.
 **`ponytail` after the shape exists, before the spec is written.** Too early it
 has nothing to cut; too late the layer is in the document and deleting it feels
 like losing work.
+
+**`archify` after the spec is stressed, before it is reviewed.** A diagram
+drawn after acceptance documents a decision nobody could see when they made it.
+And never report a drawing as produced by `archify` when it is not installed -
+say it was drawn by hand.
 
 **`grill-me` twice, on two different targets.** The idea, then the written
 spec. Running it once on the idea and calling the spec stress-tested is the

@@ -110,8 +110,27 @@ def section_body(text: str, pattern: str) -> str:
     return text[m.end(): m.end() + nxt.start()] if nxt else text[m.end():]
 
 
+APPROVAL = re.compile(
+    r"(?:Approved|Accepted)\s+(\d{4}-\d{2}-\d{2})([^\n]*)", re.I)
+
+
 def is_approved(text: str) -> bool:
-    return bool(re.search(r"Approved\s+\d{4}-\d{2}-\d{2}", text))
+    return bool(APPROVAL.search(text))
+
+
+def check_approver(text: str) -> None:
+    """An agent never records its own approval.
+
+    A status line an agent wrote on its own work is not a gate, so the one
+    thing that makes it one is checked: a named human, on the line.
+    """
+    m = APPROVAL.search(text)
+    if not m:
+        return
+    if not re.search(r"\bby\b\s*@?\w", m.group(2), re.I):
+        fail("marked approved with no named approver -- an agent does not "
+             "record its own approval. Write `Accepted <date> by @who` once a "
+             "human has actually accepted it (see acceptance.md)")
 
 
 # --------------------------------------------------------------------------
@@ -125,6 +144,12 @@ def check_structure(text: str) -> None:
 
     if not re.search(r"^#\s+\S", text, re.M):
         fail("no title")
+
+    if not re.search(r"```mermaid|\.mmd\b|!\[|diagram|docs/architecture",
+                     text, re.I):
+        warn("no diagram referenced -- a reviewer finds a wrong boundary in a "
+             "picture in seconds and misses it in twelve sections of prose "
+             "(see visualise.md)")
 
     # Optional, but it is the section spec-format.md names as the one most
     # often missing -- and the one whoever writes the code invents at 2am.
@@ -287,6 +312,7 @@ def main(argv: list[str]) -> int:
           f"{'approved' if approved else 'draft'})")
 
     check_structure(text)
+    check_approver(text)
     check_decisions(text, approved)
     check_open_questions(text, approved)
     check_deferred(text)

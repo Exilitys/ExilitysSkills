@@ -168,6 +168,21 @@ servers are authenticated. Then per-library sections covering **how this project
 uses it**, especially version-critical gotchas where training data is likely
 describing an older major.
 
+## Step 4b - Have the writing accepted
+
+The gap table in step 3 confirmed *what* to write. That is not the same as
+accepting *what was written* - a user who agreed to "generate an architecture
+doc" has not reviewed the architecture doc.
+
+So present what you wrote, per `blueprint/references/acceptance.md`: the files,
+what each claims, and the two or three places you are least confident. These
+documents become the project's truth and every later session reads them as
+fact, which is exactly why an unreviewed generated doc is worse than a missing
+one - a gap gets asked about, a confident wrong sentence does not.
+
+Changes requested here are cheap and expected. **Never record your own
+approval** on a document you generated.
+
 ## Step 5 - Make the writing checkable
 
 Write an integrity test. This is short and it is the highest-leverage artifact

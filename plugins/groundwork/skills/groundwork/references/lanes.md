@@ -18,8 +18,10 @@ A new feature or user-visible capability.
 | 1 | **Explore intent before designing** | `superpowers:brainstorming` — before plan mode, always |
 | 2 | **Contract check** | path vs. the contract list |
 | 3 | Spec | write to the project's spec directory. **Cite provenance — file and date — for every locked decision.** Stress-test with `grill-me`; for a slice large or unfamiliar enough to need interrogation first, run `blueprint` |
-| 4 | **GATE** | contract path → stop, get approval. Otherwise continue |
+| 3b | **Draw it** | `archify` on the spec/design — the diagram goes in the review packet, not in the docs afterwards. See below |
+| 4 | **GATE** | contract path → stop. **A human reviews and accepts** — `blueprint/references/acceptance.md`. Otherwise continue |
 | 5 | Plan | `superpowers:writing-plans` — checkbox tasks, global constraints |
+| 5b | **Plan accepted** | a human accepts the plan before any file is edited. A plan is not a lesser artifact than a spec |
 | 6 | Isolate | `superpowers:using-git-worktrees` |
 | 7 | Build | `superpowers:executing-plans` or `subagent-driven-development` |
 | 7a | *before every file* | **climb the ladder** — need it? exists here? stdlib? platform? installed dep? one line? |
@@ -53,6 +55,41 @@ attached.
 **It is not the PR description.** Different audience, different length: the PR
 body is for someone deciding whether to look, the page is for someone who has
 decided and now has to understand. Step 11 still happens.
+
+### Drawing it before the gate, not after
+
+The diagram at 3b is a **review instrument**, not documentation. A reviewer
+holding a whole spec in working memory misses a boundary in the wrong place; the
+same reviewer looking at a picture finds it in seconds. Drawn after approval it
+documents a decision nobody could see when they made it.
+
+It is also a check on the design: **a design you cannot draw is not finished.**
+A component that needs an arrow to everything, a boundary that cuts an entity in
+half, an arrow whose failure behaviour nobody specified - each is visible in the
+drawing before it is expensive.
+
+`archify` owns this. If it is not installed, draw it by hand in Mermaid rather
+than skipping it, and say it was drawn by hand. Full guidance in
+`blueprint/references/visualise.md`.
+
+### What steps 4 and 5b actually require
+
+Both are the same gate, applied to two artifacts, and both are described in
+`blueprint/references/acceptance.md`:
+
+- Hand over a **review packet** - the artifact, the diagram, what changed since
+  the last round, the open questions, and where you want them to look hardest.
+- **Stop and wait.** Nothing downstream starts. "Let me know if you want
+  changes" while continuing is not a gate.
+- **Changes requested is the gate working**, not a failure. Change what was
+  asked and only that, re-present the diff rather than the whole document, and
+  come back. No round limit.
+- **An agent never records its own approval.** It records who accepted, and
+  when.
+
+A plan skipped through here is the most common version of this failure: it
+reads as a checklist, so it gets executed rather than reviewed, and its
+sequencing decisions were never examined by anyone.
 
 ### Design skills and a decided direction
 

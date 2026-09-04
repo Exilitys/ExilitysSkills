@@ -48,11 +48,24 @@ a reference product, an abandoned repo — and work the flow, stopping at each
 python assets/check_spec.py docs/prd/prd.md
 ```
 
-6. **Get explicit sign-off** — *checkpoint 5, a re-read rather than a first
-   read; surprises here mean an earlier checkpoint was skipped* — then hand off
-   to `/groundwork`, naming what was deferred and what blueprint did *not*
-   decide. Silence reads as settled. An approved spec may not carry open
-   questions; the checker enforces it.
+6. **Draw it** — `archify` on the spec, system design and architecture, into
+   `docs/architecture/`. Before the gate, not after: the diagram is a review
+   instrument, and a reviewer finds a wrong boundary in a picture in seconds
+   and misses it in twelve sections of prose. If `archify` is not installed,
+   draw it by hand in Mermaid and say so — do not skip it. A design you cannot
+   draw is not finished.
+7. **A human reviews and accepts.** Hand over the review packet — the spec, the
+   diagram, what changed since the last round, the open questions, and the two
+   or three places you want them to look hardest — then **stop and wait.**
+   Nothing downstream starts. *Checkpoint 5 — a re-read rather than a first
+   read; surprises here mean an earlier checkpoint was skipped.*
+   - Changes requested is the gate working. Change what was asked and only
+     that, re-present the *diff*, come back here. No round limit.
+   - **Never record your own approval.** When they accept, write
+     `Status. Accepted <date> by @who` and the version they saw. An accepted
+     spec may not carry open questions; the checker enforces both.
+8. **Hand off** to `/groundwork`, naming what was deferred and what blueprint
+   did *not* decide. Silence reads as settled.
 
 Do not write the root `AGENTS.md`/`CLAUDE.md`, the hooks or the lane table —
 those are groundwork's, and writing them here creates two homes for one truth
