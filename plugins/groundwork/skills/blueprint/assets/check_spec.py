@@ -162,12 +162,41 @@ def check_decisions(text: str, approved: bool) -> None:
         if not re.search(r"\*\*Revisit when\.?\*\*", body, re.I):
             warn(f"{did}: no `Revisit when.` -- nothing will ever reopen this")
 
-        if not re.search(r"\*\*Provenance\.?\*\*", body, re.I):
+        prov = re.search(r"\*\*Provenance\.?\*\*(.*?)(?=\n\s*[-*]\s\*\*|\Z)",
+                         body, re.I | re.S)
+        if not prov:
             msg = (f"{did}: no `Provenance.` -- a locked decision cites who and "
                    f"when, or it is a guess wearing a spec's clothes")
             fail(msg) if approved else warn(msg)
+        elif not re.search(r"@|\bwith\b|\bdelegated\b|\bchose\b", prov.group(1), re.I):
+            warn(f"{did}: provenance gives a date but not a decider -- "
+                 f"`with @who`, or `delegated`, so a reader knows whether "
+                 f"overturning it needs the conversation again")
 
     print(f"  ..  {len(blocks)} decision record(s)")
+
+
+def check_open_questions(text: str, approved: bool) -> None:
+    """Silence is not agreement, enforced.
+
+    An approved spec carrying open questions is the moment those questions turn
+    into assumptions with a signature on them.
+    """
+    body = section_body(text, r"^##\s*\d*\.?\s*Open questions")
+    items = [ln.strip() for ln in body.splitlines()
+             if re.match(r"[-*]\s", ln.strip())]
+    if not items:
+        return
+    if approved:
+        for line in items:
+            fail(f"approved spec still has an open question: {line[:70]}")
+        return
+    print(f"  ..  {len(items)} open question(s) -- fine in a draft, "
+          f"not at sign-off")
+    for line in items:
+        if not re.search(r"if unanswered|blocks|decides", line, re.I):
+            warn(f"open question with no consequence named: {line[:60]} -- "
+                 f"say what it blocks, or it is a note nobody will chase")
 
 
 def check_deferred(text: str) -> None:
@@ -179,7 +208,7 @@ def check_deferred(text: str) -> None:
         return
 
     for line in body.splitlines():
-        if not line.strip().startswith(("-", "*")):
+        if not re.match(r"[-*]\s", line.strip()):
             continue
         if not re.search(r"revisit\s+when", line, re.I):
             fail(f"deferred item with no revisit condition: {line.strip()[:70]}")
@@ -259,6 +288,7 @@ def main(argv: list[str]) -> int:
 
     check_structure(text)
     check_decisions(text, approved)
+    check_open_questions(text, approved)
     check_deferred(text)
     check_falsifiable(prose, prose_written, args.scaffold)
     check_placeholders(prose, args.scaffold)

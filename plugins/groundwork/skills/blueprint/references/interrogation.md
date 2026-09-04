@@ -4,6 +4,12 @@ The purpose of this phase is not to understand the product completely. It is to
 **remove the ambiguity that would otherwise be resolved by an implementer
 guessing.** Those are different targets, and the second one terminates.
 
+It is also a conversation rather than a questionnaire. Everything in
+`collaboration.md` applies here first: ask in batches of three to five, never
+treat an unanswered question as answered, and **contribute as well as extract**
+- the failure modes you can see and the user has not raised are worth more than
+another round of questions.
+
 ## The filter
 
 Before asking anything, run the question through one test:
@@ -116,9 +122,19 @@ Two failure directions, both real:
 If a round of questions produces no change to the shape of the build, that
 round was the last one.
 
-## Recording the answers
+## Recording the answers - and the non-answers
 
 Answers do not live in the chat log; they die there. Every answer that settles
 something becomes either a **stated requirement** or the *because* line of a
 decision record in `spec-format.md`. An answer that is neither was trivia -
 which means the filter at the top of this file should have caught it.
+
+**A question that was not answered is recorded too**, in the spec's
+`Open questions` section - not silently resolved, not converted into an
+inference, not dropped because the conversation moved on. The same goes for a
+half-answered one: "roughly ten thousand users" settles the size and leaves the
+growth rate open, and the growth rate is the half that decides the storage
+decision.
+
+`check_spec.py` fails an approved spec that still carries open questions, which
+is what stops "I'll assume X for now" from quietly becoming the product.

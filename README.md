@@ -122,6 +122,41 @@ An empty `Rejected.` row means it was a default, not a decision — and the
 format makes you write `Default, not evaluated` rather than letting a default
 wear a decision's clothes.
 
+### Written with you, not for you
+
+A spec is an agreement, so a decision you did not make is not settled — however
+well-reasoned it is. The failure that prevents is **approval theatre**: an
+agent works alone and presents a finished twelve-section document for sign-off,
+which nobody can review. They can skim it and say "looks good", and now every
+unexamined decision inside it carries a signature.
+
+So the flow stops at **five checkpoints** — the restatement, the core
+assumption and scope, each cluster of three to five decisions *as they are
+made*, the first slice, then the whole document. By the last one you have
+already agreed to everything in it; if the final read produces surprises, an
+earlier checkpoint was skipped.
+
+Three rules hold it up:
+
+- **Propose, never announce.** Not "I've chosen Postgres" but two or three
+  genuine options, what each costs, and a recommendation with its reasoning.
+  A recommendation flanked by two obviously worse options is an announcement in
+  a costume — and it produces exactly the empty `Rejected.` row the format
+  exists to prevent.
+- **Silence is not agreement.** An unanswered question stays in the spec's
+  `Open questions` section rather than quietly becoming a default. `check_spec.py`
+  fails an approved spec that still has any, which is what stops "I'll assume X
+  for now" from becoming the product.
+- **Ask three to five at a time.** Fifteen questions in one message gets one
+  answer covering three of them, and the other twelve become silent
+  assumptions.
+
+Provenance records *who* decided, because `Decided with @user` and `Agent's
+call; @user delegated` are different facts that cost different amounts to
+overturn later. And when you overrule a recommendation, the agent's reasoning
+is kept as the rejected alternative — the argument that lost is exactly what a
+reader needs when the revisit condition fires.
+
 ### Said versus inferred
 
 The step that keeps the whole thing honest. An agent handed a thin idea will
@@ -488,6 +523,7 @@ plugins/groundwork/
     references/
       intake.md                     any input shape; said vs. inferred
       interrogation.md              the question taxonomy, and when to stop
+      collaboration.md              the checkpoints; propose vs. announce; open questions
       spec-format.md                sections, the decision record, falsifiability
       handoff.md                    the seam to groundwork; re-entry paths
       skill-map.md                  what it routes to, and the fallbacks

@@ -23,6 +23,31 @@ correcting an assumption nobody made on purpose.
 The working rule: **a statement that rules nothing out is description. Cut it,
 or turn it into a decision.**
 
+## And the one about how
+
+> The spec is written *with* the user, not *for* them.
+
+A spec is an agreement, so a decision the user did not make is not settled -
+however well-reasoned it is. That makes this a conversation with checkpoints,
+not a task the agent goes away and completes.
+
+Three rules carry it, and `references/collaboration.md` has the rest:
+
+- **Propose, never announce.** Every decision reaches the user as a choice with
+  real alternatives, their costs, and your recommendation with its reasoning -
+  not as a result they receive.
+- **Silence is not agreement.** An unanswered question stays open. It does not
+  become a default, an inference, or a decision. Unanswered questions live in
+  the spec's `Open questions` section, and the checker fails an approved spec
+  that still has any.
+- **Agree in clusters, as you go.** Three to five decisions at a time, not
+  twelve sections at the end. A final read that produces surprises means an
+  earlier checkpoint was skipped.
+
+The failure this prevents is **approval theatre**: a finished document arrives,
+it is too large to review, it gets skimmed and waved through - and now every
+unexamined decision inside it carries a signature.
+
 ## What counts as enough detail
 
 The user asking for this usually wants "extreme detail", and they are right to
@@ -49,6 +74,9 @@ exists to prevent.
 
 ## The flow
 
+The five checkpoints below are where the flow stops and waits. They are not
+status updates - each one is a decision point the user owns.
+
 ### 1. Intake - take the input in whatever shape it arrives
 
 A PRD, three sentences in chat, a meeting transcript, a competitor's URL, a
@@ -72,6 +100,9 @@ will fill the gaps with plausible features and the user will approve them
 because they look reasonable - and then the project is building someone else's
 product. Inference is not the problem; **unlabelled** inference is.
 
+> **Checkpoint 1.** The restatement and both lists, confirmed, before any
+> question gets asked. A misread premise here makes every later answer wrong.
+
 ### 2. Interrogate - grill only what changes the build
 
 `references/interrogation.md` has the question taxonomy and the routing.
@@ -92,6 +123,18 @@ off the shelf that does it? A spec whose honest conclusion is "buy this
 instead" is the most valuable output this skill can produce, and it is never
 reached by a process that assumes the project is happening.
 
+**Ask in batches of three to five**, grouped by subject. Fifteen questions in
+one message gets one answer covering three of them, and the other twelve
+silently become assumptions - which is the extractive failure this skill is
+built to avoid.
+
+**Contribute, do not only extract.** If you can see a failure mode they have
+not raised, a simpler shape, or something that already exists and removes half
+the project, say it unprompted. A skill that only asks questions is a form.
+
+> **Checkpoint 2.** The core assumption and the scope split, agreed, before any
+> technical decision rests on them.
+
 ### 3. Decide the shape
 
 Now the technical half: stack, architecture, data model, the seams, the
@@ -110,6 +153,20 @@ discipline groundwork's gate already demands:
 A decision with an empty *rejected* row was not a decision, it was a default.
 Say so - "default, not evaluated" is honest and tells the next reader how much
 weight it carries.
+
+**Each of these is put to the user before it is written down**, as two or three
+genuine options with their costs and your recommendation. The *rejected* row is
+only honest if the alternatives were really on the table; an agent that decides
+first and documents second produces the field with plausible-looking content
+and no argument behind it.
+
+Record who decided. `Decided <date> with @user` and `Agent's call; @user
+delegated <date>` are different facts, and the difference is what tells a
+future reader how much conversation overturning it deserves.
+
+> **Checkpoint 3.** Each cluster of three to five decisions, agreed as it is
+> made. This is the checkpoint that does the real work, and the first one an
+> agent working at speed will skip.
 
 Route to `codebase-design` for the module seams and interfaces, and to a
 minimalism skill (`ponytail`) as the counterweight. **Spec time is when
@@ -132,6 +189,11 @@ are what groundwork's inventory will look for.
 the smallest thing that proves the core assumption, and make it small enough to
 be one Lane 1 pass.
 
+Carry any still-unanswered question into the `Open questions` section rather
+than resolving it on the user's behalf.
+
+> **Checkpoint 4.** The first slice, agreed, before the document is finalised.
+
 ### 5. Stress it, then check it
 
 Run `grill-me` **on the spec**, not on the idea - different target, different
@@ -149,7 +211,13 @@ should not be left to a careful reading at the end of a long session.
 
 ### 6. Approve, then hand off
 
-Get explicit sign-off. Then `references/handoff.md`: the project goes to
+> **Checkpoint 5.** The whole spec - a *re-read*, not a first read. Everything
+> in it was agreed at checkpoints 1-4, so this should be a formality. If it is
+> not, an earlier checkpoint was skipped; go back to it rather than defending
+> the draft.
+
+Get explicit sign-off. An approved spec may not carry open questions - the
+checker enforces it. Then `references/handoff.md`: the project goes to
 **groundwork Mode A**, which inventories what you just wrote, resolves concerns
 1, 2 and 11 to it rather than generating placeholders, and sets up the context
 system, the lanes and the gate around it.
@@ -172,6 +240,7 @@ groundwork applies to everything else, applied to the pair of skills.
 
 | File | Read when |
 |---|---|
+| `references/collaboration.md` | **Always** - the checkpoints, proposing vs. announcing, what silence does not mean |
 | `references/intake.md` | Step 1 - normalising any input shape, said vs. inferred |
 | `references/interrogation.md` | Step 2 - the question taxonomy, routing, the stopping rule |
 | `references/spec-format.md` | Steps 3-4 - the document's sections, caps, and how each fails |

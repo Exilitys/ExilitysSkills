@@ -64,7 +64,10 @@ included and are not. The cheapest section in the document.>
 - **Because.** <the reason, tied to a constraint or requirement - not taste,
   not industry convention>
 - **Revisit when.** <the condition that would overturn this>
-- **Provenance.** <who, and the date>
+- **Provenance.** <who, and the date. `Decided <date> with @user` when they
+  chose from options; `Agent's call; @user delegated <date>` when they
+  declined to; these are different facts and cost different amounts to
+  overturn.>
 
 <!-- Duplicate the D-001 block above for D-002, D-003, ... -->
 
@@ -137,3 +140,12 @@ being avoided rather than deferred.>
 
 <Tests: could one Lane 1 pass build it? Does it prove the assumption rather
 than just producing a working screen? Is it allowed to come back negative?>
+
+## 13. Open questions
+
+<Asked and not answered. Silence is not agreement, so it lives here rather than
+becoming an assumption. A draft is expected to carry these; an approved spec
+may not - check_spec.py fails on it.>
+
+- **<Question>.** Asked <date>, not answered. Blocks <D-00N / which section>.
+  **If unanswered at build time:** <what happens by default>.

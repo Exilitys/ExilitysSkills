@@ -38,6 +38,7 @@ two sections should be able to argue with the project.
 | 10 | **Risks** | what could make this fail, and the early signal for each | a list of generic project risks |
 | 11 | **Deferred** | what was consciously not decided, each with a revisit condition | a decision hidden here to avoid making it |
 | 12 | **The first slice** | the smallest build that proves section 3 | it is the whole product with a smaller font |
+| 13 | **Open questions** | what was asked and not yet answered | it is empty because unanswered questions were quietly resolved instead |
 
 Sections a project genuinely has no answer for are **omitted, not stubbed** -
 an empty heading implies a ruling that was never made.
@@ -73,6 +74,16 @@ Rules:
 - **Every locked decision carries provenance - who and when.** Same rule
   groundwork's gate enforces on specs, for the same reason: a decision without
   provenance is a guess wearing a spec's clothes.
+- **Provenance names who decided, and these are different facts:**
+
+  | Form | Means | Cost to overturn |
+  |---|---|---|
+  | `Decided 2026-09-04 with @user` | put to them as options; they chose | the conversation again |
+  | `Agent's call; @user delegated 2026-09-04` | they explicitly declined to choose | cheap - nobody argued for it |
+  | `@user chose against the recommendation; see Rejected` | overruled, and the losing argument is kept | it was already argued once |
+
+  Filing a delegation as a joint decision inflates how settled the spec is, and
+  the inflation is only discovered when someone tries to change it.
 - **Number them.** `D-001`. The numbers get cited by the build, by later
   specs, and by the backlog rows that revisit them.
 
@@ -122,6 +133,25 @@ POST /imports  { file_id: str, mode: "replace" | "append" }
 Prose - "an endpoint to start an import, which returns an id" - leaves the
 error cases, the modes, and the concurrency rule to be invented later, and each
 of those is a real decision.
+
+## Open questions
+
+The section that makes "silence is not agreement" real. Anything asked and not
+answered lives here, in the document, rather than in a chat log nobody reopens.
+
+```markdown
+- **Growth rate.** Asked 2026-09-04, not answered. Decides D-004 (storage) -
+  Postgres holds to roughly 2k writes/s and the rate is currently a guess.
+  **If unanswered at build time:** proceed on Postgres and treat D-004's
+  revisit condition as live.
+```
+
+Each entry carries what it blocks and what happens if it is never answered -
+otherwise it is a note, not a question, and notes do not get chased.
+
+A **draft** spec is expected to have these. An **approved** one may not:
+`check_spec.py` fails on it, because approving a spec with open questions is
+the moment they turn into assumptions with a signature on them.
 
 ## The first slice
 
