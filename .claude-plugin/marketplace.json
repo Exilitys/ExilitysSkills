@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "groundwork",
-      "description": "Set up and maintain a project's agentic context system and coding workflow - the AGENTS.md/CLAUDE.md layer, the contract gate, the enforcement hooks, and the lane discipline",
+      "description": "Turn an idea or PRD into an interrogated technical spec (blueprint), then set up and maintain the project's agentic context system and coding workflow - the AGENTS.md/CLAUDE.md layer, the contract gate, the enforcement hooks, and the lane discipline",
       "version": "0.1.0",
       "source": "./plugins/groundwork",
       "author": {
@@ -20,7 +20,10 @@
         "agents-md",
         "invariants",
         "hooks",
-        "lanes"
+        "lanes",
+        "spec",
+        "prd",
+        "new-project"
       ]
     },
     {

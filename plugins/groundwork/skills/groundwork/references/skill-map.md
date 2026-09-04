@@ -81,8 +81,15 @@ python install.py --skill explain-diff-html      # any other host
 
 ### Tier 3 - craft. Called from inside a step; absence is not a blocker.
 
-`ui-ux-pro-max`, `shadcn`, `ui-styling`, a test-writing skill (`/test`), a
-minimalism skill (`ponytail`), `zoom-out`, a graph skill (`graphify`).
+`ui-ux-pro-max`, `ui-styling`, a test-writing skill (`/test`), a minimalism
+skill (`ponytail`), `zoom-out`, a graph skill (`graphify`).
+
+**Component primitives are not a skill row.** Earlier versions of this table
+listed a `shadcn` skill here; the real mechanism is the shadcn and Magic UI MCP
+servers, configured at bootstrap per `design-system.md` — not gated by this
+tier system, because an MCP server is not a skill and its absence is a missing
+tool, not a missing discipline. Check `.mcp.json`/`components.json`, not the
+skill list, for whether it is wired up.
 
 ### Reporting the gaps
 
@@ -115,11 +122,12 @@ context maintenance, PR prose. These are usually a different family's strength.
 
 | Phase | Owner |
 |---|---|
+| Turn an idea into a spec | `blueprint` - the sibling skill in this plugin |
 | What's next / roadmap | a scope skill |
 | Bootstrap context on a cold repo | an audit skill, plus this one |
 | Explore intent | `superpowers:brainstorming` |
 | Stress-test a design | `grill-me`, or `grill-with-docs` where a domain doc exists |
-| Spec | project convention |
+| Spec | project convention; `blueprint` when the slice is large enough to need interrogation first |
 | Plan | `superpowers:writing-plans` |
 | Isolate | `superpowers:using-git-worktrees` |
 | Execute | `superpowers:executing-plans` / `subagent-driven-development` |

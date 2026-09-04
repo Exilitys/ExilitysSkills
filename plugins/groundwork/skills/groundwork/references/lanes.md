@@ -17,7 +17,7 @@ A new feature or user-visible capability.
 | 0 | Orient | branch, uncommitted state, open plans, graph freshness (the `SessionStart` hook prints these) |
 | 1 | **Explore intent before designing** | `superpowers:brainstorming` — before plan mode, always |
 | 2 | **Contract check** | path vs. the contract list |
-| 3 | Spec | write to the project's spec directory. **Cite provenance — file and date — for every locked decision.** Stress-test with `grill-me` |
+| 3 | Spec | write to the project's spec directory. **Cite provenance — file and date — for every locked decision.** Stress-test with `grill-me`; for a slice large or unfamiliar enough to need interrogation first, run `blueprint` |
 | 4 | **GATE** | contract path → stop, get approval. Otherwise continue |
 | 5 | Plan | `superpowers:writing-plans` — checkbox tasks, global constraints |
 | 6 | Isolate | `superpowers:using-git-worktrees` |
@@ -26,7 +26,7 @@ A new feature or user-visible capability.
 | 7b | Backend / pure logic | `superpowers:test-driven-development` — red, green, refactor |
 | 7c | UI | build visually first with mock data, then write tests. Test-first on a component nobody has seen is theatre |
 | 7d | UI craft | `ui-ux-pro-max` **fed the project's design brief as constraints** — see below |
-| 7e | Primitives | `shadcn` for components; `ui-styling` for Tailwind/a11y mechanics |
+| 7e | Primitives | shadcn's and Magic UI's registries, over MCP — `references/design-system.md`; `ui-styling` for Tailwind/a11y mechanics |
 | 8 | Verify | `superpowers:verification-before-completion` — run the real commands, read the output |
 | 9 | Prove | `/check verify` in the real app; `/check review` on a fresh model |
 | 10 | Review | `superpowers:requesting-code-review` → `receiving-code-review` |
