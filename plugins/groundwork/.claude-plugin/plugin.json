@@ -1,10 +1,23 @@
 {
   "name": "groundwork",
-  "description": "Set up and maintain a project's agentic context system and coding workflow - the AGENTS.md/CLAUDE.md layer, the contract gate, the enforcement hooks, and the lane discipline that routes features, bugs, chores and spikes through the right skills",
+  "description": "Two skills: blueprint turns an idea, PRD or feature brief into an interrogated, decision-recorded technical spec; groundwork then sets up and maintains the context system, the contract gate, the enforcement hooks and the lane discipline around it",
   "version": "0.1.0",
-  "author": { "name": "Exilitys" },
+  "author": {
+    "name": "Exilitys"
+  },
   "homepage": "https://github.com/Exilitys/ExilitysSkills",
   "repository": "https://github.com/Exilitys/ExilitysSkills",
   "license": "MIT",
-  "keywords": ["workflow", "context", "agents-md", "invariants", "hooks", "lanes", "drift"]
+  "keywords": [
+    "workflow",
+    "context",
+    "agents-md",
+    "invariants",
+    "hooks",
+    "lanes",
+    "drift",
+    "spec",
+    "prd",
+    "new-project"
+  ]
 }

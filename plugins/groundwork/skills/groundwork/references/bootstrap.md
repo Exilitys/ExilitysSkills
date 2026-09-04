@@ -46,6 +46,13 @@ aspirational. A doc that names a class is a claim; check the class exists.
 | 8 | What's next | backlog, roadmap, issues | `build-plan.md` |
 | 9 | Where we are | git + status headers + a hook | `progress-tracker.md` |
 
+**If `docs/prd/` holds a blueprint spec, concerns 1, 2 and 11 resolve to it** -
+pointers, not generated files. That is the seam between the two skills, and it
+is why bootstrap writes *less* on a project that was specified first: two
+documents describing one project is the drift this skill exists to prevent.
+Read its decision records before writing anything, and take its deferred items
+(each carrying a revisit condition) as the starting contract list for step 6.
+
 Concerns **3 and 4 are the reliable gaps.** Most projects document what they
 are building and almost none document how it is written or which library
 version's docs to trust. Expect those two to be real work and the rest to be

@@ -17,7 +17,7 @@ A new feature or user-visible capability.
 | 0 | Orient | branch, uncommitted state, open plans, graph freshness (the `SessionStart` hook prints these) |
 | 1 | **Explore intent before designing** | `superpowers:brainstorming` — before plan mode, always |
 | 2 | **Contract check** | path vs. the contract list |
-| 3 | Spec | write to the project's spec directory. **Cite provenance — file and date — for every locked decision.** Stress-test with `grill-me` |
+| 3 | Spec | write to the project's spec directory. **Cite provenance — file and date — for every locked decision.** Stress-test with `grill-me`; for a slice large or unfamiliar enough to need interrogation first, run `blueprint` |
 | 4 | **GATE** | contract path → stop, get approval. Otherwise continue |
 | 5 | Plan | `superpowers:writing-plans` — checkbox tasks, global constraints |
 | 6 | Isolate | `superpowers:using-git-worktrees` |

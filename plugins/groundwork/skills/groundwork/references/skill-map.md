@@ -122,11 +122,12 @@ context maintenance, PR prose. These are usually a different family's strength.
 
 | Phase | Owner |
 |---|---|
+| Turn an idea into a spec | `blueprint` - the sibling skill in this plugin |
 | What's next / roadmap | a scope skill |
 | Bootstrap context on a cold repo | an audit skill, plus this one |
 | Explore intent | `superpowers:brainstorming` |
 | Stress-test a design | `grill-me`, or `grill-with-docs` where a domain doc exists |
-| Spec | project convention |
+| Spec | project convention; `blueprint` when the slice is large enough to need interrogation first |
 | Plan | `superpowers:writing-plans` |
 | Isolate | `superpowers:using-git-worktrees` |
 | Execute | `superpowers:executing-plans` / `subagent-driven-development` |
