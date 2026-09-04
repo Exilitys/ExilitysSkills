@@ -87,7 +87,9 @@ raising the question the next one answers.
 
 Start from `assets/template.html` — a working scaffold with the table of
 contents, section shells, callout and diagram styles, and the quiz interaction
-already wired. Replace its content; keep its structure.
+already wired. Replace its content; keep its structure, and build every visual
+element out of the components it already defines rather than inventing new ones
+(see **Design and components** below).
 
 The hard constraints are in `references/html-contract.md`. The one that bites
 most often: **a code block styled with a custom `div` collapses every newline
@@ -110,9 +112,11 @@ time, and it lands outside the repository so it never reaches version control.
 `/tmp`, which does not exist on Windows.
 
 **Run the checker and paste its output.** It catches the newline collapse, an
-external `<script src>` that will not load offline, a missing date prefix, and
-a file accidentally written inside the repo. Do not report the page as done on
-the strength of having intended those things.
+external `<script src>` that will not load offline, a missing date prefix, a
+file accidentally written inside the repo, and the design rules that are
+mechanically decidable — a colour token missing from one theme, a class with no
+CSS behind it, a page overspending its emphasis budget. Do not report the page
+as done on the strength of having intended those things.
 
 ### 6. Hand it over
 
@@ -121,6 +125,35 @@ change is still unexplained — a hunk you could not account for, a decision wit
 no recoverable rationale — say which, rather than letting a confident-looking
 document imply full coverage.
 
+## Design and components
+
+> **The template's components are the vocabulary. Extend them; never invent
+> alongside them.**
+
+These pages do not fail by being ugly. They fail by emphasising everything, so
+the reader cannot tell which parts carry the idea — and by growing a new visual
+grammar per point, which costs a re-orientation every time it appears. Three
+rules carry most of it:
+
+- **Every visual element comes from the template's set** — `.callout` and its
+  `.warn` / `.key` variants, `<pre>`, tables inside `.scroll-x`, `.diagram`
+  with `.node` and `.arrow`, `.compare`, `.caption`, `.q`. If nothing fits,
+  extend the nearest one so it inherits the tokens, the dark mode and the phone
+  layout. A class you invent and do not style renders as bare text.
+- **Colour only through the tokens.** Both palettes live on `:root`; every
+  other rule says `var(--x)`. A hex literal elsewhere is a light-mode
+  assumption dark mode cannot override, and a token defined only in the
+  dark-mode block is invisible in light mode. Never encode meaning in colour
+  alone — the `+`/`-` and `✓`/`✗` glyphs are what carry it.
+- **Spend the emphasis budget deliberately.** One `.callout.key` — the change
+  turns on one idea. A callout no more often than every sixth paragraph. Three
+  to six diagrams, drawn from two or three reused families. Past that, a box
+  stops meaning "look here" and starts meaning nothing.
+
+Which component for which job, what each colour token means, and the type scale
+are in `references/design.md`. `check_output.py` enforces the parts of it a
+tool can decide.
+
 ## References
 
 | File | Read when |
@@ -128,6 +161,7 @@ document imply full coverage.
 | `references/structure.md` | Writing the sections — what each must contain, and the transitions |
 | `references/diagrams.md` | Choosing diagram families; the HTML patterns; why never ASCII |
 | `references/quiz.md` | Writing questions that test understanding rather than reading |
+| `references/design.md` | Choosing a component, the colour tokens, how much emphasis a page can carry |
 | `references/html-contract.md` | The file's hard constraints: self-contained, responsive, whitespace |
 | `assets/template.html` | Always — start here rather than from an empty file |
 | `assets/check_output.py` | Before claiming the page is finished |

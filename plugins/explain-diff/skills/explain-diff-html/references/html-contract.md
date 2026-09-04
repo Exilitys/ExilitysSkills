@@ -57,31 +57,23 @@ It will be read on a phone. That costs one media query and three habits:
 
 ## Type and colour
 
-Long-form reading. `line-height` around 1.6, generous section spacing, a system
-font stack for prose and a monospace stack for code:
+Fonts are the system stacks, so there is nothing to load and nothing to fail:
 
 ```
 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif
 ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace
 ```
 
-Define colours once as custom properties on `:root`, then use the variables.
-A dark-mode block via `@media (prefers-color-scheme: dark)` that overrides only
-those variables is a few lines and prevents the page burning out someone's
-eyes at night. Never give a colour its only definition inside the dark-mode
-block.
+Colours are custom properties defined once on `:root`, with a
+`@media (prefers-color-scheme: dark)` block overriding the same names and
+nothing else in the file naming a colour directly. Two failures follow from
+breaking that, and both are checked: a token defined *only* in the dark block
+is undefined in light mode, and a colour literal outside those two blocks
+cannot be overridden by either.
 
-**Never encode meaning in colour alone** — added/removed lines, correct/wrong
-quiz answers. A symbol or a label alongside it.
-
-## Callouts
-
-For a definition, a key concept, an edge case, or something that would
-otherwise read as a mistake. A left border, a tinted background, a bold lead-in
-word. The template has `.callout`, `.callout.warn` and `.callout.key`.
-
-Use them sparingly. On a page where every third paragraph is a callout,
-nothing is emphasised.
+The rest of it — the type scale, what each token means, the components that use
+them, and how much emphasis a page can carry — is `design.md`. This page stops
+at the constraints the file itself has to satisfy.
 
 ## Where the file goes
 
@@ -107,6 +99,8 @@ python assets/check_output.py <path>
 
 It verifies the whitespace rule on every code block, that no external resource
 is referenced, that the filename carries the date prefix, that the file is
-outside a git repository, and that the quiz wiring is complete. Paste the
-output. A page reported as finished on the strength of intent is how the
-one-line code block ships.
+outside a git repository, that the quiz wiring is complete, and the design
+rules that are mechanically decidable — the colour tokens, uncaptioned
+diagrams, classes with no CSS behind them, and how much of the page is shouting
+(`design.md`). Paste the output. A page reported as finished on the strength
+of intent is how the one-line code block ships.

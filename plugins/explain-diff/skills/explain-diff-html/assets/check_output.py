@@ -1,9 +1,9 @@
 """Verify a produced explanation page before anyone claims it works.
 
-`html-contract.md` is a page of rules. Most of them a careful reading could
-enforce, and a careful reading is exactly what stops happening at the end of a
-long task -- which is when this file gets written. So they are checked here
-instead.
+`html-contract.md` and `design.md` are pages of rules. Most of them a careful
+reading could enforce, and a careful reading is exactly what stops happening at
+the end of a long task -- which is when this file gets written. So they are
+checked here instead.
 
     python check_output.py <path> [--scaffold]
 
@@ -38,6 +38,34 @@ WARNINGS: list[str] = []
 # white-space rule; a <pre> already has it from the browser default.
 CODEISH = re.compile(r"\b(code|snippet|listing|highlight|codeblock|source)\b", re.I)
 EXTERNAL = re.compile(r"""(?:src|href)\s*=\s*["']\s*(https?:)?//""", re.I)
+
+# A colour a theme cannot override. rgba()/hsla() are exempt: a translucent
+# overlay works over either background, which is the one honest use.
+COLOUR_LITERAL = re.compile(r"#[0-9a-fA-F]{3,8}\b|\brgb\(|\bhsl\(")
+CLASS_ATTR = re.compile(r"""class\s*=\s*["']([^"']+)["']""")
+
+
+def style_text(text: str) -> str:
+    """Every <style> block, comments stripped.
+
+    Comments go first or a note sitting above a rule is read as part of its
+    selector and lands in the failure message.
+    """
+    css = "\n".join(re.findall(r"<style[^>]*>(.*?)</style>", text, re.S | re.I))
+    return re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+
+
+def balanced(text: str, open_brace: int) -> str:
+    """The body of the {...} whose opening brace is at `open_brace`."""
+    depth = 0
+    for i in range(open_brace, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return text[open_brace + 1:i]
+    return text[open_brace + 1:]
 
 
 def fail(msg: str) -> None:
@@ -96,10 +124,7 @@ def css_rules_with_whitespace(text: str) -> set[str]:
 
 
 def check_whitespace(text: str) -> None:
-    style = "\n".join(re.findall(r"<style[^>]*>(.*?)</style>", text, re.S | re.I))
-    # Strip comments first, or a comment sitting above a rule is read as part
-    # of its selector and lands in the failure message.
-    style = re.sub(r"/\*.*?\*/", "", style, flags=re.S)
+    style = style_text(text)
     keeps = css_rules_with_whitespace(style)
 
     # A <pre> that the page has explicitly un-preserved is the nastiest case,
@@ -300,6 +325,114 @@ def check_accessibility(text: str) -> None:
 
 
 # --------------------------------------------------------------------------
+# design: one visual system
+# --------------------------------------------------------------------------
+
+def dark_override(style: str) -> str:
+    """The body of the prefers-color-scheme: dark block, or ''."""
+    m = re.search(r"@media[^{]*prefers-color-scheme\s*:\s*dark[^{]*\{", style, re.I)
+    return balanced(style, m.end() - 1) if m else ""
+
+
+def check_tokens(style: str, text: str) -> None:
+    """Colour must be a token, and a token must exist in both themes.
+
+    A custom property defined only under the dark-mode block resolves to
+    nothing in light mode -- invisible text on a page that looked perfect to
+    whoever wrote it after dark.
+    """
+    dark = dark_override(style)
+    light = style.replace(dark, "") if dark else style
+
+    declared = lambda css: set(re.findall(r"(--[\w-]+)\s*:", css))
+    light_tokens, dark_tokens = declared(light), declared(dark)
+
+    for token in sorted(dark_tokens - light_tokens):
+        fail(
+            f"`{token}` is defined only in the dark-mode block -- in light mode "
+            f"var({token}) resolves to nothing. Give it a value on :root too."
+        )
+
+    for m in re.finditer(r"var\(\s*(--[\w-]+)\s*\)", style):
+        if m.group(1) not in light_tokens | dark_tokens:
+            fail(f"var({m.group(1)}) is used but never defined -- likely a typo")
+
+    # Literals outside the two palette blocks: a light-mode assumption that
+    # dark mode has no way to override.
+    outside = re.sub(r":root[^{]*\{[^{}]*\}", "", light)
+    loose = sorted({m.group(0).replace("(", "()") for m in COLOUR_LITERAL.finditer(outside)})
+    if loose:
+        shown = ", ".join(loose[:4]) + (" ..." if len(loose) > 4 else "")
+        warn(
+            f"colour literal(s) outside :root and the dark block ({shown}) -- "
+            f"dark mode cannot override them; add a token pair instead"
+        )
+
+    for m in re.finditer(r"""style\s*=\s*["']([^"']*)["']""", text):
+        if re.search(r"(background|color|border)[^;]*(#|rgb\(|hsl\()", m.group(1), re.I):
+            warn(
+                f"inline colour in style=\"{m.group(1)[:40]}...\" -- it survives "
+                f"neither the dark-mode block nor a later restyle"
+            )
+            break
+
+
+def check_components(style: str, text: str) -> None:
+    """Every class in the markup is a component the stylesheet knows about."""
+    used: set[str] = set()
+    for m in CLASS_ATTR.finditer(text):
+        used.update(m.group(1).split())
+
+    styled = set(re.findall(r"\.([A-Za-z_][\w-]*)", style))
+    scripted: set[str] = set()
+    for block in re.findall(r"<script[^>]*>(.*?)</script>", text, re.S | re.I):
+        scripted.update(re.findall(r"""["']([A-Za-z_][\w-]*)["']""", block))
+
+    orphans = sorted(used - styled - scripted)
+    if orphans:
+        shown = ", ".join(orphans[:4]) + (" ..." if len(orphans) > 4 else "")
+        warn(
+            f"class(es) with no CSS behind them ({shown}) -- an invented "
+            f"component renders as bare text. Extend the template's set."
+        )
+
+
+def check_emphasis(text: str) -> None:
+    """The page has a fixed amount of `look here`, and it can be overspent."""
+    callouts = len(re.findall(r"""class\s*=\s*["'][^"']*\bcallout\b""", text))
+    keys = len(re.findall(
+        r"""class\s*=\s*["'][^"']*\bcallout\b[^"']*\bkey\b""", text))
+    paragraphs = len(re.findall(r"<p[\s>]", text))
+
+    if keys > 1:
+        warn(f"{keys} `.callout.key` blocks -- the change turns on one idea; "
+             f"the others are background or a warn")
+    if callouts >= 4 and paragraphs and callouts * 6 > paragraphs:
+        warn(f"{callouts} callouts across {paragraphs} paragraphs -- past about "
+             f"one in six, a box stops reading as emphasis")
+
+    diagrams = [m for m in re.finditer(
+        r"""class\s*=\s*["'][^"']*\bdiagram\b[^"']*["']""", text)]
+    if not diagrams and "<svg" not in text.lower():
+        warn("no diagrams at all -- the intuition section is where a picture "
+             "does what prose cannot")
+
+    # A diagram with no caption is a diagram the reader skims past.
+    bounds = [m.start() for m in diagrams] + [len(text)]
+    for i, start in enumerate(bounds[:-1]):
+        if "caption" not in text[start:bounds[i + 1]]:
+            warn("a .diagram has no .caption -- one line saying where to look, "
+                 "not what it is")
+            break
+
+
+def check_design(text: str) -> None:
+    style = style_text(text)
+    check_tokens(style, text)
+    check_components(style, text)
+    check_emphasis(text)
+
+# --------------------------------------------------------------------------
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -324,6 +457,7 @@ def main(argv: list[str]) -> int:
     check_structure(text, args.scaffold)
     check_quiz(text, args.scaffold)
     check_accessibility(text)
+    check_design(text)
 
     size = path.stat().st_size
     print(f"{path}  ({size / 1024:.0f} KB)")

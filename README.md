@@ -220,14 +220,17 @@ rule a tool can check, so a tool checks it:
 
 ```bash
 python assets/write_target.py --slug retry-backoff   # a dated path outside the repo
-python assets/check_output.py <path>                 # 8 checks, exit 1 on failure
+python assets/check_output.py <path>                 # exit 1 on failure
 ```
 
 `check_output.py` catches the newline collapse, an external `<script src>` that
 will not load offline, a missing date prefix, a file written inside the repo,
 a quiz option with no feedback, a correct answer that is not one of the
-options, leftover `REPLACE` placeholders, and a missing viewport tag. Every one
-of those has shipped in a page someone believed was finished.
+options, leftover `REPLACE` placeholders, and a missing viewport tag — plus the
+design rules that are mechanically decidable: a colour token defined only for
+dark mode, a class used in the markup with no CSS behind it, and a page
+spending its emphasis budget on too many callouts. Every one of those has
+shipped in a page someone believed was finished.
 
 ---
 
@@ -403,6 +406,7 @@ plugins/explain-diff/
       diagrams.md                   diagram families, HTML patterns, never ASCII
       quiz.md                       questions that test the model, not the text
       html-contract.md              self-contained, responsive, the whitespace trap
+      design.md                     the template's components, colour tokens, emphasis budget
     assets/
       template.html                 working scaffold: TOC, callouts, diagrams, quiz JS
       write_target.py               a dated path outside the repo, cross-platform
